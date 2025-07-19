@@ -22,16 +22,16 @@ export default function UnifiedChat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [interactionMode, setInteractionMode] = useState<InteractionMode>('text');
-  
+
   // Voice state
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isContinuousMode, setIsContinuousMode] = useState(false);
-  
+
   // WebSocket state
   const [isConnected, setIsConnected] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  
+
   // Refs
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -39,7 +39,7 @@ export default function UnifiedChat() {
   const streamRef = useRef<MediaStream | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const { toast } = useToast();
 
   // Auto-scroll to bottom with proper handling for long messages
@@ -55,7 +55,7 @@ export default function UnifiedChat() {
     if (interactionMode !== 'text' && !isConnected) {
       initializeVoiceChat();
     }
-    
+
     // Cleanup on mode change
     return () => {
       if (interactionMode === 'text' && wsRef.current) {
@@ -68,21 +68,17 @@ export default function UnifiedChat() {
   const initializeVoiceChat = async () => {
     try {
       console.log('Initializing voice chat...');
-      
+
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${protocol}//${window.location.host}/ws`;
       console.log('Connecting to WebSocket:', wsUrl);
-      
+
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
         console.log('WebSocket connected successfully');
         setIsConnected(true);
-        toast({
-          title: "Voice Chat Ready",
-          description: "Connected successfully. You can now use voice features.",
-        });
       };
 
       ws.onmessage = (event) => {
@@ -126,12 +122,12 @@ export default function UnifiedChat() {
   const cleanupVoiceResources = () => {
     setIsContinuousMode(false);
     setIsRecording(false);
-    
+
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
     }
-    
+
     if (mediaRecorderRef.current) {
       try {
         if (mediaRecorderRef.current.state !== 'inactive') {
@@ -142,12 +138,12 @@ export default function UnifiedChat() {
       }
       mediaRecorderRef.current = null;
     }
-    
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
-    
+
     audioChunksRef.current = [];
   };
 
@@ -179,7 +175,7 @@ export default function UnifiedChat() {
       console.log('Using MIME type:', mimeType);
 
       const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
-      
+
       mediaRecorder.ondataavailable = (event) => {
         console.log('Data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
@@ -222,13 +218,14 @@ export default function UnifiedChat() {
   // Handle WebSocket messages
   const handleWebSocketMessage = (data: any) => {
     console.log('Handling WebSocket message:', data.type);
-    
+
     switch (data.type) {
       case 'session_started':
         console.log('Session started:', data.sessionId);
         setSessionId(data.sessionId);
+        setIsConnected(true);
         break;
-        
+
       case 'transcription_complete':
         console.log('Transcription received:', data.transcription);
         // Add user message with transcription
@@ -240,7 +237,7 @@ export default function UnifiedChat() {
         };
         setMessages(prev => [...prev, userMsg]);
         break;
-        
+
       case 'voice_response':
         console.log('Voice response received');
         setIsProcessing(false);
@@ -252,10 +249,10 @@ export default function UnifiedChat() {
           timestamp: new Date()
         };
         setMessages(prev => [...prev, newMessage]);
-        
+
         if (data.audioUrl) {
           playAudio(data.audioUrl);
-          
+
           // Auto-restart continuous mode
           if (isContinuousMode) {
             setTimeout(() => {
@@ -263,21 +260,21 @@ export default function UnifiedChat() {
             }, 1000);
           }
         }
-        
+
         toast({
           title: "Voice Response Ready",
           description: "AI has responded to your message",
         });
         break;
-        
+
       case 'processing_step':
         console.log('Processing step:', data.step, '-', data.message);
         break;
-        
+
       case 'processing':
         console.log('Processing started:', data.message);
         break;
-        
+
       case 'error':
         console.error('WebSocket error:', data.message);
         setIsProcessing(false);
@@ -287,7 +284,7 @@ export default function UnifiedChat() {
           variant: "destructive"
         });
         break;
-        
+
       default:
         console.log('Unknown WebSocket message type:', data.type);
     }
@@ -369,7 +366,7 @@ ${analysis.feedback}`;
   // Voice recording functions
   const startRecording = async () => {
     if (!mediaRecorderRef.current || isRecording) return;
-    
+
     try {
       console.log('Starting recording...');
       audioChunksRef.current = [];
@@ -387,7 +384,7 @@ ${analysis.feedback}`;
 
   const stopRecording = () => {
     if (!mediaRecorderRef.current || !isRecording) return;
-    
+
     try {
       console.log('Stopping recording...');
       mediaRecorderRef.current.stop();
@@ -403,7 +400,7 @@ ${analysis.feedback}`;
       console.log('Cannot toggle recording while processing');
       return;
     }
-    
+
     if (isRecording) {
       stopRecording();
     } else {
@@ -423,7 +420,7 @@ ${analysis.feedback}`;
 
   const startContinuousRecording = async () => {
     if (!mediaRecorderRef.current) return;
-    
+
     audioChunksRef.current = [];
     mediaRecorderRef.current.start(250);
     setIsRecording(true);
@@ -432,12 +429,12 @@ ${analysis.feedback}`;
 
   const restartContinuousListening = async () => {
     if (!isContinuousMode) return;
-    
+
     try {
       if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'inactive') {
         await initializeMediaRecorder();
       }
-      
+
       audioChunksRef.current = [];
       mediaRecorderRef.current.start(250);
       setIsRecording(true);
@@ -474,7 +471,7 @@ ${analysis.feedback}`;
         silenceCount = 0;
       } else if (average < silenceThreshold) {
         silenceCount++;
-        
+
         if (isCurrentlySpeaking && silenceCount >= silenceLimit && audioChunksRef.current.length > 0) {
           processContinuousAudio();
           silenceCount = 0;
@@ -496,7 +493,7 @@ ${analysis.feedback}`;
     if (!mediaRecorderRef.current || audioChunksRef.current.length === 0) return;
 
     const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
-    
+
     if (audioBlob.size > 5000) {
       setIsRecording(false);
       if (mediaRecorderRef.current.state === 'recording') {
@@ -538,7 +535,7 @@ ${analysis.feedback}`;
         const result = reader.result as string;
         const base64Audio = result.split(',')[1];
         console.log('Sending audio data:', base64Audio.length, 'characters');
-        
+
         wsRef.current?.send(JSON.stringify({
           type: 'voice_data',
           sessionId: sessionId || 'default',
@@ -554,7 +551,7 @@ ${analysis.feedback}`;
         });
       }
     };
-    
+
     reader.onerror = () => {
       console.error('FileReader error');
       setIsProcessing(false);
@@ -564,7 +561,7 @@ ${analysis.feedback}`;
         variant: "destructive"
       });
     };
-    
+
     reader.readAsDataURL(audioBlob);
   };
 
@@ -608,7 +605,7 @@ ${analysis.feedback}`;
       if (!response.ok) throw new Error('Upload failed');
 
       const data = await response.json();
-      
+
       // Show processing message
       const processingMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -647,7 +644,7 @@ ${analysis.feedback}`;
         if (!response.ok) throw new Error('Failed to get analysis');
 
         const data = await response.json();
-        
+
         if (data.status === 'completed' && data.analysis) {
           // Analysis complete - show results
           const analysisMessage: Message = {
@@ -786,7 +783,7 @@ ${analysis.feedback}`;
                               <p className="m-0 text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
                             )}
                           </div>
-                          
+
                           {message.audioUrl && (
                             <div className="mt-3 flex items-center gap-2">
                               <Button
@@ -800,7 +797,7 @@ ${analysis.feedback}`;
                               </Button>
                             </div>
                           )}
-                          
+
                           <div className="text-xs opacity-50 mt-2 font-mono">
                             {message.timestamp.toLocaleTimeString()}
                           </div>
