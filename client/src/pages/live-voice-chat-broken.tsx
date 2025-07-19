@@ -39,7 +39,6 @@ export default function LiveVoiceChat() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const { toast } = useToast();
 
   // Auto-scroll to bottom
@@ -47,20 +46,13 @@ export default function LiveVoiceChat() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      disconnectWebSocket();
-      cleanupMediaResources();
-    };
-  }, []);
-
   // Initialize WebSocket connection
   const connectWebSocket = () => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
     setConnectionStatus('connecting');
     
+    // Construct WebSocket URL properly
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
     const wsUrl = `${protocol}//${host}/ws`;
@@ -84,7 +76,6 @@ export default function LiveVoiceChat() {
       console.log('WebSocket connected successfully');
       setConnectionStatus('connected');
       setIsConnected(true);
-      initializeMediaRecorder();
       toast({
         title: "Connected",
         description: "Voice chat session started",
@@ -107,6 +98,7 @@ export default function LiveVoiceChat() {
           
         case 'processing_step':
           setProcessingStep(data.step);
+          // Show step-by-step feedback for chained architecture
           toast({
             title: "Chained Processing",
             description: data.message,
@@ -115,6 +107,7 @@ export default function LiveVoiceChat() {
           break;
           
         case 'transcription_complete':
+          // Show immediate transcription feedback
           toast({
             title: "Speech Recognized",
             description: `"${data.transcription}"`,
@@ -134,10 +127,12 @@ export default function LiveVoiceChat() {
           };
           setMessages(prev => [...prev, newMessage]);
           
+          // Auto-play AI response
           if (data.audioUrl) {
             playAudio(data.audioUrl);
           }
           
+          // Show completion feedback for chained processing
           if (data.chainedProcessing) {
             toast({
               title: "Voice Processing Complete",
@@ -164,8 +159,7 @@ export default function LiveVoiceChat() {
       setConnectionStatus('disconnected');
       setIsConnected(false);
       setSessionId(null);
-      cleanupMediaResources();
-      if (event.code !== 1000) {
+      if (event.code !== 1000) { // 1000 is normal closure
         toast({
           title: "Disconnected",
           description: "Voice chat session ended unexpectedly",
@@ -193,136 +187,145 @@ export default function LiveVoiceChat() {
       wsRef.current = null;
     }
     stopRecording();
-    cleanupMediaResources();
     setIsConnected(false);
     setConnectionStatus('disconnected');
     setSessionId(null);
     setMessages([]);
   };
 
-  // Cleanup media resources
-  const cleanupMediaResources = () => {
-    if (mediaRecorderRef.current) {
-      try {
-        if (mediaRecorderRef.current.state !== 'inactive') {
-          mediaRecorderRef.current.stop();
-        }
-      } catch (e) {
-        console.warn('Error stopping media recorder:', e);
-      }
-      mediaRecorderRef.current = null;
-    }
-    
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
-    }
-    
-    audioChunksRef.current = [];
-    setIsRecording(false);
-  };
-
-  // Initialize MediaRecorder
-  const initializeMediaRecorder = async () => {
-    try {
-      console.log('Requesting microphone access...');
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+  // Initialize media recorder
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices && isConnected) {
+      navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
           sampleRate: 16000
         }
-      });
+      })
+        .then(stream => {
+          // Try different MIME types for better compatibility
+          let mimeType = 'audio/webm;codecs=opus';
+          if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'audio/webm';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+              mimeType = 'audio/wav';
+              if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = ''; // Use default
+              }
+            }
+          }
+          
+          const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+          mediaRecorderRef.current = mediaRecorder;
+          
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunksRef.current.push(event.data);
+            }
+          };
+          
+          mediaRecorder.onstop = () => {
+            if (audioChunksRef.current.length > 0) {
+              const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/wav' });
+              sendAudioToServer(audioBlob);
+              audioChunksRef.current = [];
+            }
+          };
+        })
+        .catch(err => {
+          console.error('Error accessing microphone:', err);
+          toast({
+            title: "Microphone access denied",
+            description: "Please allow microphone access for voice chat",
+            variant: "destructive"
+          });
+        });
+    }
+  }, [isConnected]);
 
-      streamRef.current = stream;
-      console.log('Microphone access granted, setting up MediaRecorder...');
+  // Send audio to server via WebSocket
+  const sendAudioToServer = async (audioBlob: Blob) => {
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket not connected');
+      return;
+    }
+
+    try {
+      console.log('Sending audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
       
-      // Try different MIME types for better compatibility
-      let mimeType = '';
-      const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/wav'];
-      for (const type of types) {
-        if (MediaRecorder.isTypeSupported(type)) {
-          mimeType = type;
-          break;
+      // Convert blob to base64 in chunks for large files
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      
+      // Convert to base64 safely
+      let base64Audio = '';
+      try {
+        // Use FileReader for safer base64 conversion
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => {
+            try {
+              const result = reader.result as string;
+              if (result && result.includes(',')) {
+                // Remove data URL prefix
+                const base64Data = result.split(',')[1];
+                resolve(base64Data);
+              } else {
+                reject(new Error('Invalid FileReader result'));
+              }
+            } catch (err) {
+              reject(err);
+            }
+          };
+          reader.onerror = () => reject(new Error('FileReader error'));
+        });
+        
+        reader.readAsDataURL(audioBlob);
+        base64Audio = await base64Promise;
+      } catch (error) {
+        console.error('Base64 conversion error:', error);
+        // Fallback to manual conversion
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const chunkSize = 8192;
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+          const chunk = uint8Array.slice(i, i + chunkSize);
+          base64Audio += btoa(String.fromCharCode.apply(null, Array.from(chunk)));
         }
       }
       
-      console.log('Using MIME type:', mimeType || 'default');
+      console.log('Base64 audio length:', base64Audio.length);
       
-      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-      mediaRecorderRef.current = mediaRecorder;
-      
-      mediaRecorder.ondataavailable = (event) => {
-        console.log('Data available:', event.data.size, 'bytes');
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        console.log('Recording stopped, chunks:', audioChunksRef.current.length);
-        if (audioChunksRef.current.length === 0) {
-          console.warn('No audio chunks collected');
-          toast({
-            title: "Recording Error",
-            description: "No audio data was captured. Please try again.",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/wav' });
-        console.log('Created audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
-        
-        sendAudioToServer(audioBlob);
-        audioChunksRef.current = [];
-      };
-
-      mediaRecorder.onerror = (event) => {
-        console.error('MediaRecorder error:', event);
-        toast({
-          title: "Recording Error",
-          description: "Microphone recording failed. Please check permissions.",
-          variant: "destructive"
-        });
-      };
-
-      console.log('MediaRecorder initialized successfully');
-      
+      wsRef.current.send(JSON.stringify({
+        type: 'voice_data',
+        audioData: base64Audio,
+        sessionId,
+        mimeType: audioBlob.type
+      }));
     } catch (error) {
-      console.error('Error initializing MediaRecorder:', error);
+      console.error('Error sending audio:', error);
       toast({
-        title: "Microphone Error",
-        description: "Could not access microphone. Please allow microphone permissions and refresh the page.",
+        title: "Audio send failed",
+        description: "Could not send audio to server",
         variant: "destructive"
       });
     }
   };
 
   // Start recording
-  const startRecording = async () => {
-    if (isRecording || isProcessing) return;
+  const startRecording = () => {
+    if (!mediaRecorderRef.current || !isConnected || isProcessing) return;
     
     try {
-      if (!mediaRecorderRef.current) {
-        await initializeMediaRecorder();
-        if (!mediaRecorderRef.current) {
-          throw new Error('Failed to initialize MediaRecorder');
-        }
-      }
-
-      console.log('Starting recording...');
       audioChunksRef.current = [];
-      mediaRecorderRef.current.start(1000);
+      mediaRecorderRef.current.start(1000); // Record in 1-second chunks
       setIsRecording(true);
-      
     } catch (error) {
       console.error('Error starting recording:', error);
       toast({
         title: "Recording failed",
-        description: "Could not start recording. Please check microphone permissions.",
+        description: "Could not start recording. Please try again.",
         variant: "destructive"
       });
     }
@@ -333,70 +336,11 @@ export default function LiveVoiceChat() {
     if (!mediaRecorderRef.current || !isRecording) return;
     
     try {
-      console.log('Stopping recording...');
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     } catch (error) {
       console.error('Error stopping recording:', error);
       setIsRecording(false);
-    }
-  };
-
-  // Send audio to server
-  const sendAudioToServer = async (audioBlob: Blob) => {
-    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      console.error('WebSocket not connected');
-      toast({
-        title: "Connection Error",
-        description: "Voice connection lost. Please reconnect.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      console.log('Converting audio blob to base64...');
-      const reader = new FileReader();
-      
-      reader.onloadend = () => {
-        try {
-          const base64Data = (reader.result as string).split(',')[1];
-          console.log('Sending audio data:', base64Data.length, 'characters');
-          
-          wsRef.current?.send(JSON.stringify({
-            type: 'voice_data',
-            audioData: base64Data,
-            mimeType: audioBlob.type
-          }));
-          
-        } catch (error) {
-          console.error('Error sending audio data:', error);
-          toast({
-            title: "Send Error",
-            description: "Failed to send audio. Please try again.",
-            variant: "destructive"
-          });
-        }
-      };
-      
-      reader.onerror = (error) => {
-        console.error('FileReader error:', error);
-        toast({
-          title: "Audio Processing Error",
-          description: "Failed to process audio. Please try again.",
-          variant: "destructive"
-        });
-      };
-      
-      reader.readAsDataURL(audioBlob);
-      
-    } catch (error) {
-      console.error('Error processing audio:', error);
-      toast({
-        title: "Processing Error",
-        description: "Failed to process audio data.",
-        variant: "destructive"
-      });
     }
   };
 
@@ -530,77 +474,52 @@ export default function LiveVoiceChat() {
                     ))}
                   </div>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="w-16 h-16 mx-auto hyperdash-gradient rounded-full flex items-center justify-center">
-                        <Mic className="w-8 h-8 text-black" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold mb-2">Start Your Conversation</h3>
-                        <p className="text-muted-foreground">
-                          Hold the microphone button and speak to begin voice chat
-                        </p>
-                      </div>
+                  <div className="flex items-center justify-center h-32">
+                    <div className="text-center">
+                      <Mic className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground">Hold the button below and start speaking</p>
                     </div>
                   </div>
                 )}
-
-                {/* Processing Status */}
-                {isProcessing && (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="text-center space-y-3">
-                      <div className="flex items-center space-x-3 text-primary">
-                        <Loader2 className="w-6 h-6 animate-spin" />
-                        <span className="text-lg font-medium">Chained Processing Active</span>
-                      </div>
-                      {processingStep && (
-                        <div className="text-sm text-muted-foreground">
-                          Step: {processingStep === 'transcription' ? '1. OpenAI Whisper (Speech-to-Text)' :
-                                 processingStep === 'text_processing' ? '2. OpenAI GPT (Text Processing)' :
-                                 processingStep === 'speech_generation' ? '3. ElevenLabs (Text-to-Speech)' :
-                                 'Initializing...'}
-                        </div>
-                      )}
-                      <div className="flex justify-center space-x-2 mt-2">
-                        <div className={`w-2 h-2 rounded-full ${processingStep === 'transcription' || processingStep === 'text_processing' || processingStep === 'speech_generation' ? 'bg-primary' : 'bg-muted'}`}></div>
-                        <div className={`w-2 h-2 rounded-full ${processingStep === 'text_processing' || processingStep === 'speech_generation' ? 'bg-primary' : 'bg-muted'}`}></div>
-                        <div className={`w-2 h-2 rounded-full ${processingStep === 'speech_generation' ? 'bg-primary' : 'bg-muted'}`}></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 <div ref={chatEndRef} />
               </ScrollArea>
 
               {/* Voice Controls */}
-              <div className="text-center">
-                <Button
-                  onMouseDown={startRecording}
-                  onMouseUp={stopRecording}
-                  onTouchStart={startRecording}
-                  onTouchEnd={stopRecording}
-                  disabled={isProcessing || !sessionId}
-                  className={`w-20 h-20 rounded-full border-4 transition-all duration-200 ${
-                    isRecording 
-                      ? 'bg-red-500 border-red-300 scale-110 shadow-red-500/50 shadow-2xl' 
-                      : isProcessing
-                      ? 'bg-yellow-500 border-yellow-300'
-                      : 'hyperdash-gradient border-primary/30 hover:scale-105 shadow-primary/50 shadow-xl'
-                  }`}
-                >
-                  {isProcessing ? (
-                    <Loader2 className="w-8 h-8 animate-spin text-black" />
-                  ) : isRecording ? (
-                    <MicOff className="w-8 h-8 text-white" />
-                  ) : (
-                    <Mic className="w-8 h-8 text-black" />
+              <div className="flex justify-center">
+                <div className="relative">
+                  <Button
+                    onMouseDown={startRecording}
+                    onMouseUp={stopRecording}
+                    onTouchStart={startRecording}
+                    onTouchEnd={stopRecording}
+                    disabled={!isConnected || isProcessing}
+                    className={`w-24 h-24 rounded-full text-white font-bold text-lg transition-all ${
+                      isRecording
+                        ? "bg-red-500 hover:bg-red-600 animate-pulse scale-110"
+                        : isProcessing
+                        ? "bg-yellow-500 hover:bg-yellow-600"
+                        : "hyperdash-gradient hover:scale-105"
+                    }`}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="w-8 h-8 animate-spin" />
+                    ) : isRecording ? (
+                      <MicOff className="w-8 h-8" />
+                    ) : (
+                      <Mic className="w-8 h-8" />
+                    )}
+                  </Button>
+                  
+                  {isRecording && (
+                    <div className="absolute -inset-2 bg-red-500/20 rounded-full animate-ping"></div>
                   )}
-                </Button>
-                
-                <p className="text-sm text-muted-foreground mt-3">
+                </div>
+              </div>
+
+              <div className="text-center mt-4">
+                <p className="text-sm text-muted-foreground">
                   {isProcessing
-                    ? `AI is processing... ${processingStep ? `(${processingStep})` : ''}`
+                    ? "AI is thinking..."
                     : isRecording
                     ? "Release to send..."
                     : "Hold to speak"}

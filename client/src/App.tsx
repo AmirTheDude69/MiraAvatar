@@ -13,7 +13,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/chat" component={Chat} />
-      <Route path="/live-voice" component={LiveVoiceChat} />
+      <Route path="/live-voice-chat" component={LiveVoiceChat} />
       <Route component={NotFound} />
     </Switch>
   );
