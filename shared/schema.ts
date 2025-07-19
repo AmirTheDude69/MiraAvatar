@@ -17,6 +17,7 @@ export const cvAnalyses = pgTable("cv_analyses", {
     improvements: string[];
     score: number;
     feedback: string;
+    rawFeedback?: string;
   }>(),
   audioUrl: text("audio_url"),
   status: text("status").notNull().default("processing"), // processing, completed, failed

@@ -19,23 +19,25 @@ export class OpenAIService {
         messages: [
           {
             role: "system",
-            content: `You are an expert career coach and CV analyzer. Analyze the provided CV and provide:
+            content: `You are an expert career coach and CV analyzer. Take a thorough look at this CV, compare it with others in its relative field, and give some constructive, actionable, and specific feedback.
+
+Provide your analysis in JSON format with:
 1. 3-5 key strengths
-2. 3-5 areas for improvement
+2. 3-5 areas for improvement  
 3. An overall score out of 100
-4. Detailed feedback for voice delivery (2-3 paragraphs)
+4. Detailed feedback for voice delivery (2-3 paragraphs that sound natural when spoken)
 
 Respond with JSON in this exact format:
 {
   "strengths": ["strength1", "strength2", ...],
   "improvements": ["improvement1", "improvement2", ...],
   "score": number,
-  "feedback": "detailed feedback text for voice delivery"
+  "feedback": "detailed feedback text for voice delivery that sounds natural when spoken aloud"
 }`
           },
           {
             role: "user",
-            content: `Please analyze this CV:\n\n${extractedText}`
+            content: `Take a thorough look at this CV, compare it with others in its relative field, and give some constructive, actionable, and specific feedback:\n\n${extractedText}`
           }
         ],
         response_format: { type: "json_object" },

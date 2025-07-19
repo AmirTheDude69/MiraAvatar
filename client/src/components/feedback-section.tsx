@@ -48,6 +48,16 @@ export default function FeedbackSection({ analysis, onAnalyzeAnother }: Feedback
             </div>
           </div>
           
+          {/* AI Feedback Text */}
+          {analysis.analysis?.feedback && (
+            <div className="mb-6 bg-card/50 rounded-lg p-6 border border-border/30">
+              <h4 className="text-lg font-semibold text-foreground mb-3">AI Analysis Feedback</h4>
+              <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+                {analysis.analysis.feedback}
+              </p>
+            </div>
+          )}
+          
           {/* Feedback Content */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Strengths */}

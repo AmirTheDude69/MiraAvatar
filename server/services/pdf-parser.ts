@@ -1,41 +1,34 @@
 export class PDFParser {
   async extractText(buffer: Buffer): Promise<string> {
     try {
-      // For now, return a mock extracted text since we can't install pypdf in this environment
-      // In production, this would use a PDF parsing library like pdf-parse or pdf2pic
-      const mockText = `
-JOHN DOE
-Senior Software Engineer
-
-EXPERIENCE
-Senior Software Engineer | Tech Corp | 2020-2024
-• Led development of microservices architecture serving 1M+ users
-• Improved system performance by 40% through optimization
-• Mentored junior developers and conducted code reviews
-
-Software Engineer | StartupXYZ | 2018-2020
-• Built full-stack web applications using React and Node.js
-• Implemented CI/CD pipelines reducing deployment time by 60%
-• Collaborated with cross-functional teams on product features
-
-EDUCATION
-Bachelor of Computer Science | University of Technology | 2018
-
-SKILLS
-• Programming: JavaScript, TypeScript, Python, Java
-• Frontend: React, Vue.js, HTML5, CSS3
-• Backend: Node.js, Express, Django, PostgreSQL
-• Cloud: AWS, Docker, Kubernetes
-• Tools: Git, Jenkins, JIRA
-
-ACHIEVEMENTS
-• AWS Certified Solutions Architect
-• Led team that won company hackathon 2023
-• Published 3 technical articles with 10k+ views
-      `.trim();
-
-      return mockText;
+      console.log("Extracting text from PDF buffer...");
+      
+      // For now, we'll use a simple text extraction approach
+      // In production, you'd want to use a proper PDF parsing library
+      const text = buffer.toString('utf-8');
+      
+      // Basic check if this looks like PDF content
+      if (text.includes('%PDF')) {
+        // This is a real PDF, extract what we can
+        const textContent = text
+          .split('\n')
+          .filter(line => !line.startsWith('%') && line.trim().length > 0)
+          .join(' ')
+          .replace(/[^\x20-\x7E]/g, ' ') // Remove non-printable characters
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        if (textContent.length < 50) {
+          throw new Error("Unable to extract meaningful text from this PDF. Please ensure it contains text content.");
+        }
+        
+        console.log(`Extracted ${textContent.length} characters from PDF`);
+        return textContent;
+      } else {
+        throw new Error("Invalid PDF format");
+      }
     } catch (error) {
+      console.error("PDF parsing error:", error);
       throw new Error(`Failed to extract text from PDF: ${error}`);
     }
   }
