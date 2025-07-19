@@ -57,7 +57,7 @@ export default function Home() {
       console.log('Polling analysis:', analysisId, 'Status:', data?.status, 'Data:', query);
       // Continue polling if still processing or if we don't have data yet
       if (!data || data.status === 'processing') {
-        return 3000; // Poll every 3 seconds
+        return 1500; // Poll every 1.5 seconds for faster updates
       }
       return false; // Stop polling when completed
     },

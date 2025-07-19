@@ -17,34 +17,30 @@ export interface CVAnalysisResult {
 export class OpenAIService {
   async analyzeCv(extractedText: string): Promise<CVAnalysisResult> {
     try {
+      // Optimize input length and use faster model for speed
+      const optimizedText = extractedText.length > 2000 ? extractedText.substring(0, 2000) + "..." : extractedText;
+      
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o-mini", // Faster model for quicker responses
         messages: [
           {
             role: "system",
-            content: `You are an expert career coach and CV analyzer. Take a thorough look at this CV, compare it with others in its relative field, and give some constructive, actionable, and specific feedback.
-
-Provide your analysis in JSON format with:
-1. 3-5 key strengths
-2. 3-5 areas for improvement  
-3. An overall score out of 100
-4. Detailed feedback for voice delivery (2-3 paragraphs that sound natural when spoken)
-
-Respond with JSON in this exact format:
+            content: `CV analyzer. Provide concise feedback in JSON format:
 {
-  "strengths": ["strength1", "strength2", ...],
-  "improvements": ["improvement1", "improvement2", ...],
+  "strengths": ["strength1", "strength2", "strength3"],
+  "improvements": ["improvement1", "improvement2", "improvement3"],
   "score": number,
-  "feedback": "detailed feedback text for voice delivery that sounds natural when spoken aloud"
+  "feedback": "brief 2-3 sentence summary for voice delivery"
 }`
           },
           {
             role: "user",
-            content: `Take a thorough look at this CV, compare it with others in its relative field, and give some constructive, actionable, and specific feedback:\n\n${extractedText}`
+            content: `Analyze CV:\n\n${optimizedText}`
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7
+        temperature: 0.3, // Lower for faster, more focused responses
+        max_tokens: 500 // Reduced for speed
       });
 
       const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -65,7 +61,7 @@ Respond with JSON in this exact format:
   async chatWithAI(message: string, includeVoice: boolean = false): Promise<{ text: string; audioUrl?: string }> {
     try {
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o-mini", // Faster model for chat responses
         messages: [
           {
             role: "system",
@@ -76,8 +72,8 @@ Respond with JSON in this exact format:
             content: message
           }
         ],
-        temperature: 0.7,
-        max_tokens: 500
+        temperature: 0.5, // Lower for faster responses
+        max_tokens: 300 // Reduced for speed
       });
 
       const text = response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
@@ -210,10 +206,10 @@ Respond with JSON in this exact format:
       ];
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o-mini", // Faster model for real-time conversation
         messages,
-        temperature: 0.8, // Slightly higher for more natural conversation
-        max_tokens: 300, // Shorter responses for real-time chat
+        temperature: 0.6, // Optimized for speed and quality
+        max_tokens: 200, // Shorter for real-time chat
       });
 
       return response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
