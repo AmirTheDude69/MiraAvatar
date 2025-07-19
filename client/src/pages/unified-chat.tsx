@@ -690,21 +690,13 @@ ${analysis.feedback}`;
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Sophisticated background ambiance */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/3 left-1/4 w-[600px] h-[600px] rounded-full bg-gradient-to-r from-blue-500/8 to-indigo-500/6 blur-3xl opacity-60" />
-        <div className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] rounded-full bg-gradient-to-r from-violet-500/6 to-purple-500/8 blur-3xl opacity-50" />
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-gradient-to-r from-cyan-400/4 to-blue-400/6 blur-2xl opacity-40" />
+      {/* Subtle background effects */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-blue-500/10 to-indigo-500/10 blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-purple-500/10 to-blue-500/10 blur-3xl" />
       </div>
 
-      {/* Elegant floating particles */}
-      <div className="absolute inset-0 overflow-hidden opacity-30">
-        <div className="absolute top-1/4 left-1/5 w-2 h-2 bg-blue-400/40 rounded-full animate-pulse" />
-        <div className="absolute top-3/4 right-1/5 w-1 h-1 bg-violet-400/50 rounded-full animate-pulse delay-1000" />
-        <div className="absolute bottom-1/3 left-2/3 w-1.5 h-1.5 bg-cyan-400/30 rounded-full animate-pulse delay-500" />
-      </div>
-
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-8 h-screen flex flex-col min-h-0 elegant-grid">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-8 h-screen flex flex-col min-h-0 cyber-grid">
         {/* Header with interaction modes */}
         <div className="mb-6">
           <h1 className="text-4xl titillium-web-bold text-center mb-6 neon-text">
@@ -715,8 +707,8 @@ ${analysis.feedback}`;
               onClick={() => setInteractionMode('text')}
               variant={interactionMode === 'text' ? 'default' : 'ghost'}
               size="sm"
-              className={`titillium-web-semibold rounded-full transition-all duration-400 ${
-                interactionMode === 'text' ? 'premium-button elegant-glow' : 'premium-button hover:bg-slate-800/30'
+              className={`titillium-web-semibold rounded-full border border-gray-600/30 transition-all duration-300 ${
+                interactionMode === 'text' ? 'bg-blue-500/10 border-blue-400/40 shadow-lg' : 'hover:bg-gray-700/20'
               }`}
             >
               <MessageSquare className="w-4 h-4 mr-2" />
@@ -726,8 +718,8 @@ ${analysis.feedback}`;
               onClick={() => setInteractionMode('click-to-talk')}
               variant={interactionMode === 'click-to-talk' ? 'default' : 'ghost'}
               size="sm"
-              className={`titillium-web-semibold rounded-full transition-all duration-400 ${
-                interactionMode === 'click-to-talk' ? 'premium-button elegant-glow' : 'premium-button hover:bg-slate-800/30'
+              className={`titillium-web-semibold rounded-full border border-gray-600/30 transition-all duration-300 ${
+                interactionMode === 'click-to-talk' ? 'bg-blue-500/10 border-blue-400/40 shadow-lg' : 'hover:bg-gray-700/20'
               }`}
             >
               <Mic className="w-4 h-4 mr-2" />
@@ -737,8 +729,8 @@ ${analysis.feedback}`;
               onClick={() => setInteractionMode('continuous')}
               variant={interactionMode === 'continuous' ? 'default' : 'ghost'}
               size="sm"
-              className={`titillium-web-semibold rounded-full transition-all duration-400 ${
-                interactionMode === 'continuous' ? 'premium-button elegant-glow' : 'premium-button hover:bg-slate-800/30'
+              className={`titillium-web-semibold rounded-full border border-gray-600/30 transition-all duration-300 ${
+                interactionMode === 'continuous' ? 'bg-blue-500/10 border-blue-400/40 shadow-lg' : 'hover:bg-gray-700/20'
               }`}
             >
               <Radio className="w-4 h-4 mr-2" />
@@ -748,7 +740,7 @@ ${analysis.feedback}`;
         </div>
 
         {/* Chat Area */}
-        <Card className="flex-1 elegant-border mb-6 overflow-hidden shadow-2xl">
+        <Card className="flex-1 glass-enhanced cyberpunk-border mb-6 overflow-hidden">
           <CardContent className="p-0 h-full flex flex-col">
             <ScrollArea className="flex-1 p-6 scroll-container scrollbar-thin max-h-[70vh] overflow-y-auto">
               {messages.length === 0 ? (
@@ -780,10 +772,10 @@ ${analysis.feedback}`;
                       {/* Message bubble */}
                       <div className={`flex-1 max-w-[75%] min-w-0 ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
                         <div
-                          className={`message-bubble titillium-web-regular inline-block p-5 rounded-2xl shadow-2xl backdrop-blur-xl border transition-all duration-500 hover:shadow-2xl hover:scale-[1.01] max-h-[60vh] overflow-y-auto ${
+                          className={`message-bubble titillium-web-regular inline-block p-4 rounded-2xl shadow-xl backdrop-blur-xl border transition-all duration-300 hover:shadow-2xl max-h-[60vh] overflow-y-auto ${
                             message.type === 'user'
-                              ? 'bg-gradient-to-br from-blue-600/60 via-indigo-600/50 to-purple-600/60 text-white border-blue-300/25 rounded-br-lg elegant-glow'
-                              : 'bg-gradient-to-br from-slate-800/90 via-slate-700/85 to-slate-800/90 border-slate-500/20 text-slate-100 rounded-bl-lg shadow-slate-900/50'
+                              ? 'bg-gradient-to-br from-blue-600/70 to-indigo-600/70 text-white border-blue-400/20 rounded-br-md'
+                              : 'bg-gradient-to-br from-gray-800/95 to-gray-900/95 border-gray-600/20 text-white rounded-bl-md'
                           }`}
                         >
                           <div className="prose prose-sm prose-invert max-w-none break-words overflow-hidden">
@@ -807,9 +799,9 @@ ${analysis.feedback}`;
                                 onClick={() => playAudio(message.audioUrl!)}
                                 variant="ghost"
                                 size="sm"
-                                className="titillium-web-semibold premium-button text-blue-200 h-8 px-4 rounded-lg text-xs hover:scale-105"
+                                className="titillium-web-semibold bg-blue-500/20 hover:bg-blue-400/30 text-blue-300 border border-blue-400/30 h-7 px-3 rounded-lg transition-all duration-200 hover:scale-105 text-xs"
                               >
-                                <Volume2 className="w-3 h-3 mr-1.5" />
+                                <Volume2 className="w-3 h-3 mr-1" />
                                 PLAY AUDIO
                               </Button>
                             </div>
@@ -851,12 +843,12 @@ ${analysis.feedback}`;
                   : { onClick: toggleContinuousMode }
                 )}
                 disabled={isProcessing || !isConnected}
-                className={`titillium-web-bold w-18 h-18 rounded-full border-3 transition-all duration-400 ${
+                className={`titillium-web-bold w-16 h-16 rounded-full border-4 transition-all duration-200 ${
                   isContinuousMode
-                    ? 'bg-gradient-to-br from-blue-500 to-indigo-600 border-blue-300/80 scale-110 elegant-glow animate-pulse'
+                    ? 'bg-blue-500 border-blue-300 scale-110 shadow-blue-500/30 shadow-2xl animate-pulse'
                     : isRecording 
-                    ? 'bg-gradient-to-br from-red-500 to-rose-600 border-red-300/80 scale-110 shadow-red-500/40 shadow-2xl' 
-                    : 'premium-button hover:scale-105 shadow-2xl hover:elegant-glow'
+                    ? 'bg-red-500 border-red-300 scale-110 shadow-red-500/30 shadow-2xl' 
+                    : 'bg-gray-800/50 border-gray-600/50 hover:scale-105 shadow-blue-500/20 shadow-xl hover:border-blue-400/50'
                 }`}
               >
                 {isProcessing ? (
@@ -866,7 +858,7 @@ ${analysis.feedback}`;
                 ) : isRecording ? (
                   <MicOff className="w-6 h-6 text-white" />
                 ) : (
-                  <Mic className="w-6 h-6 text-blue-200" />
+                  <Mic className="w-6 h-6 text-blue-300" />
                 )}
               </Button>
             </div>
@@ -880,13 +872,13 @@ ${analysis.feedback}`;
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && sendTextMessage()}
                 placeholder="Enter neural data transmission..."
-                className="titillium-web-regular flex-1 elegant-border text-slate-100 placeholder:text-slate-400/70 focus:ring-2 focus:ring-blue-400/20 focus:border-blue-400/40"
+                className="titillium-web-regular flex-1 glass-enhanced border-gray-600/30 text-gray-100 placeholder:text-gray-400/70"
                 disabled={isProcessing}
               />
               <Button
                 onClick={sendTextMessage}
                 disabled={!inputText.trim() || isProcessing}
-                className="titillium-web-semibold premium-button text-blue-200"
+                className="titillium-web-semibold bg-blue-500/10 border border-blue-400/30 hover:bg-blue-500/20 transition-all duration-300 text-blue-300"
               >
                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
@@ -898,7 +890,7 @@ ${analysis.feedback}`;
             <Button
               onClick={() => fileInputRef.current?.click()}
               variant="outline"
-              className="titillium-web-bold premium-button text-blue-200 px-6 py-3 text-sm"
+              className="titillium-web-bold bg-blue-500/10 border border-blue-400/30 hover:bg-blue-500/20 transition-all duration-300 text-blue-300"
               disabled={isProcessing}
             >
               <Upload className="w-4 h-4 mr-2" />
