@@ -34,6 +34,7 @@ export default function LiveVoiceChat() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
+  const [interactionMode, setInteractionMode] = useState<'hold' | 'click'>('hold');
   
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -301,6 +302,17 @@ export default function LiveVoiceChat() {
     }
   };
 
+  // Toggle recording for click mode
+  const toggleRecording = async () => {
+    if (isProcessing) return;
+    
+    if (isRecording) {
+      stopRecording();
+    } else {
+      await startRecording();
+    }
+  };
+
   // Start recording
   const startRecording = async () => {
     if (isRecording || isProcessing) return;
@@ -433,6 +445,31 @@ export default function LiveVoiceChat() {
               </Button>
             </Link>
           </div>
+          
+          {/* Interaction Mode Toggle */}
+          {isConnected && (
+            <div className="flex items-center justify-center mb-6">
+              <div className="flex items-center space-x-4 glass-enhanced border border-border/30 rounded-full px-4 py-2">
+                <span className="text-sm text-muted-foreground">Interaction Mode:</span>
+                <Button
+                  onClick={() => setInteractionMode('hold')}
+                  variant={interactionMode === 'hold' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="rounded-full"
+                >
+                  Hold to Talk
+                </Button>
+                <Button
+                  onClick={() => setInteractionMode('click')}
+                  variant={interactionMode === 'click' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="rounded-full"
+                >
+                  Click to Talk
+                </Button>
+              </div>
+            </div>
+          )}
           <h1 className="text-4xl md:text-5xl font-black hyperdash-gradient-text mb-4">
             Live Voice Chat
           </h1>
@@ -576,10 +613,17 @@ export default function LiveVoiceChat() {
               {/* Voice Controls */}
               <div className="text-center">
                 <Button
-                  onMouseDown={startRecording}
-                  onMouseUp={stopRecording}
-                  onTouchStart={startRecording}
-                  onTouchEnd={stopRecording}
+                  {...(interactionMode === 'hold' 
+                    ? {
+                        onMouseDown: startRecording,
+                        onMouseUp: stopRecording,
+                        onTouchStart: startRecording,
+                        onTouchEnd: stopRecording
+                      }
+                    : {
+                        onClick: toggleRecording
+                      }
+                  )}
                   disabled={isProcessing || !sessionId}
                   className={`w-20 h-20 rounded-full border-4 transition-all duration-200 ${
                     isRecording 
@@ -602,8 +646,13 @@ export default function LiveVoiceChat() {
                   {isProcessing
                     ? `AI is processing... ${processingStep ? `(${processingStep})` : ''}`
                     : isRecording
-                    ? "Release to send..."
-                    : "Hold to speak"}
+                    ? (interactionMode === 'hold' ? "Release to send..." : "Click to stop recording...")
+                    : (interactionMode === 'hold' ? "Hold to speak" : "Click to start speaking")}
+                </p>
+                
+                {/* Mode indicator */}
+                <p className="text-xs text-muted-foreground/70 mt-1">
+                  {interactionMode === 'hold' ? 'Hold & Release Mode' : 'Click to Toggle Mode'}
                 </p>
               </div>
             </CardContent>

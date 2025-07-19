@@ -102,7 +102,8 @@ The application is designed to be easily deployable on Replit with minimal confi
 
 ## Recent Changes
 
-### July 19, 2025 - Latest Update: Live Voice Chat with Chained Architecture Implementation
+### July 19, 2025 - Latest Update: Live Voice Chat with Dual Interaction Modes & Chained Architecture
+- **Dual Interaction Modes**: Added toggle between "Hold to Talk" (traditional push-to-talk) and "Click to Talk" (seamless conversation flow)
 - **Chained Architecture**: Implemented proper OpenAI chained voice processing: Speech-to-Text → GPT Text Processing → ElevenLabs Text-to-Speech
 - **Real-Time Feedback**: Added step-by-step processing notifications showing each stage of the chained workflow
 - **Enhanced PDF Extraction**: Replaced problematic pdf-parse with comprehensive custom extraction using multiple fallback methods
@@ -110,6 +111,7 @@ The application is designed to be easily deployable on Replit with minimal confi
 - **WebSocket Improvements**: Enhanced real-time communication with detailed processing status and immediate transcription feedback
 - **Voice-Optimized Responses**: Added specialized prompting for natural-sounding voice conversations with shorter, conversational responses
 - **Processing Transparency**: Users now see clear feedback at each step: "Converting speech to text", "Generating response", "Creating audio"
+- **Flexible UX**: Users can choose their preferred interaction style for optimal voice chat experience
 
 ### Earlier July 19, 2025
 - **Database Integration Complete**: Successfully connected PostgreSQL database replacing all mock data
