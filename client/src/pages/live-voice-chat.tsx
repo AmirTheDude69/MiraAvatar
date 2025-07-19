@@ -34,7 +34,8 @@ export default function LiveVoiceChat() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
-  const [interactionMode, setInteractionMode] = useState<'hold' | 'click'>('hold');
+  const [interactionMode, setInteractionMode] = useState<'hold' | 'click' | 'continuous'>('hold');
+  const [isContinuousMode, setIsContinuousMode] = useState(false);
   
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -313,6 +314,97 @@ export default function LiveVoiceChat() {
     }
   };
 
+  // Toggle continuous mode
+  const toggleContinuousMode = async () => {
+    if (isProcessing) return;
+    
+    if (isContinuousMode) {
+      // Stop continuous mode
+      setIsContinuousMode(false);
+      if (isRecording) {
+        stopRecording();
+      }
+    } else {
+      // Start continuous mode
+      setIsContinuousMode(true);
+      await startContinuousRecording();
+    }
+  };
+
+  // Start continuous recording with silence detection
+  const startContinuousRecording = async () => {
+    if (!mediaRecorderRef.current) {
+      await initializeMediaRecorder();
+      if (!mediaRecorderRef.current) {
+        throw new Error('Failed to initialize MediaRecorder');
+      }
+    }
+
+    // Start recording in continuous mode
+    audioChunksRef.current = [];
+    mediaRecorderRef.current.start(250); // Smaller chunks for real-time processing
+    setIsRecording(true);
+    
+    // Set up silence detection and auto-processing
+    setupSilenceDetection();
+  };
+
+  // Setup silence detection for continuous mode
+  const setupSilenceDetection = () => {
+    if (!streamRef.current) return;
+
+    const audioContext = new AudioContext();
+    const source = audioContext.createMediaStreamSource(streamRef.current);
+    const analyser = audioContext.createAnalyser();
+    analyser.fftSize = 256;
+    source.connect(analyser);
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    let silenceCount = 0;
+    const silenceThreshold = 30; // Adjustable silence threshold
+    const silenceLimit = 20; // Number of silent frames before processing (roughly 1 second)
+
+    const checkAudioLevel = () => {
+      if (!isContinuousMode) return;
+
+      analyser.getByteFrequencyData(dataArray);
+      const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+
+      if (average < silenceThreshold) {
+        silenceCount++;
+        if (silenceCount >= silenceLimit && audioChunksRef.current.length > 0) {
+          // Silence detected, process current audio
+          processContinuousAudio();
+          silenceCount = 0;
+        }
+      } else {
+        silenceCount = 0; // Reset silence count when sound is detected
+      }
+
+      if (isContinuousMode) {
+        requestAnimationFrame(checkAudioLevel);
+      }
+    };
+
+    checkAudioLevel();
+  };
+
+  // Process audio in continuous mode
+  const processContinuousAudio = () => {
+    if (!mediaRecorderRef.current || audioChunksRef.current.length === 0) return;
+
+    // Create blob from current chunks
+    const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
+    
+    // Only process if blob has meaningful size (not just silence)
+    if (audioBlob.size > 5000) { // Minimum size threshold
+      sendAudioToServer(audioBlob);
+    }
+
+    // Clear chunks and continue recording
+    audioChunksRef.current = [];
+  };
+
   // Start recording
   const startRecording = async () => {
     if (isRecording || isProcessing) return;
@@ -348,9 +440,11 @@ export default function LiveVoiceChat() {
       console.log('Stopping recording...');
       mediaRecorderRef.current.stop();
       setIsRecording(false);
+      setIsContinuousMode(false);
     } catch (error) {
       console.error('Error stopping recording:', error);
       setIsRecording(false);
+      setIsContinuousMode(false);
     }
   };
 
@@ -466,6 +560,14 @@ export default function LiveVoiceChat() {
                   className="rounded-full"
                 >
                   Click to Talk
+                </Button>
+                <Button
+                  onClick={() => setInteractionMode('continuous')}
+                  variant={interactionMode === 'continuous' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="rounded-full"
+                >
+                  Continuous Chat
                 </Button>
               </div>
             </div>
@@ -620,13 +722,19 @@ export default function LiveVoiceChat() {
                         onTouchStart: startRecording,
                         onTouchEnd: stopRecording
                       }
-                    : {
+                    : interactionMode === 'click'
+                    ? {
                         onClick: toggleRecording
+                      }
+                    : {
+                        onClick: toggleContinuousMode
                       }
                   )}
                   disabled={isProcessing || !sessionId}
                   className={`w-20 h-20 rounded-full border-4 transition-all duration-200 ${
-                    isRecording 
+                    isContinuousMode
+                      ? 'bg-green-500 border-green-300 scale-110 shadow-green-500/50 shadow-2xl animate-pulse'
+                      : isRecording 
                       ? 'bg-red-500 border-red-300 scale-110 shadow-red-500/50 shadow-2xl' 
                       : isProcessing
                       ? 'bg-yellow-500 border-yellow-300'
@@ -635,6 +743,8 @@ export default function LiveVoiceChat() {
                 >
                   {isProcessing ? (
                     <Loader2 className="w-8 h-8 animate-spin text-black" />
+                  ) : isContinuousMode ? (
+                    <Radio className="w-8 h-8 text-white animate-pulse" />
                   ) : isRecording ? (
                     <MicOff className="w-8 h-8 text-white" />
                   ) : (
@@ -645,14 +755,20 @@ export default function LiveVoiceChat() {
                 <p className="text-sm text-muted-foreground mt-3">
                   {isProcessing
                     ? `AI is processing... ${processingStep ? `(${processingStep})` : ''}`
+                    : isContinuousMode
+                    ? "Listening continuously... Just speak naturally!"
                     : isRecording
                     ? (interactionMode === 'hold' ? "Release to send..." : "Click to stop recording...")
-                    : (interactionMode === 'hold' ? "Hold to speak" : "Click to start speaking")}
+                    : (interactionMode === 'hold' ? "Hold to speak" : 
+                       interactionMode === 'click' ? "Click to start speaking" : 
+                       "Click to start continuous conversation")}
                 </p>
                 
                 {/* Mode indicator */}
                 <p className="text-xs text-muted-foreground/70 mt-1">
-                  {interactionMode === 'hold' ? 'Hold & Release Mode' : 'Click to Toggle Mode'}
+                  {interactionMode === 'hold' ? 'Hold & Release Mode' : 
+                   interactionMode === 'click' ? 'Click to Toggle Mode' : 
+                   'Continuous Conversation Mode'}
                 </p>
               </div>
             </CardContent>
