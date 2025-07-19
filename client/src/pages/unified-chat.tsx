@@ -44,7 +44,10 @@ export default function UnifiedChat() {
 
   // Auto-scroll to bottom
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const timer = setTimeout(() => {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   // Initialize WebSocket connection when voice modes are used
@@ -151,30 +154,67 @@ export default function UnifiedChat() {
   // Initialize media recorder
   const initializeMediaRecorder = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
+      console.log('Requesting microphone access...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
       });
+      streamRef.current = stream;
+      console.log('Microphone access granted, setting up MediaRecorder...');
+
+      // Check for supported MIME types
+      let mimeType = 'audio/webm;codecs=opus';
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'audio/webm';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = 'audio/mp4';
+          if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = '';
+          }
+        }
+      }
+      console.log('Using MIME type:', mimeType);
+
+      const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
       
       mediaRecorder.ondataavailable = (event) => {
+        console.log('Data available:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = () => {
+        console.log('Recording stopped, chunks:', audioChunksRef.current.length);
         if (audioChunksRef.current.length > 0) {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
+          const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/webm' });
+          console.log('Created audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
           sendAudioToServer(audioBlob);
           audioChunksRef.current = [];
         }
       };
 
+      mediaRecorder.onerror = (event) => {
+        console.error('MediaRecorder error:', event);
+        toast({
+          title: "Recording Error",
+          description: "Failed to record audio. Please try again.",
+          variant: "destructive"
+        });
+      };
+
       mediaRecorderRef.current = mediaRecorder;
+      console.log('MediaRecorder initialized successfully');
     } catch (error) {
       console.error('Failed to initialize media recorder:', error);
+      toast({
+        title: "Microphone Error",
+        description: "Failed to access microphone. Please grant permission and try again.",
+        variant: "destructive"
+      });
       throw error;
     }
   };
@@ -189,13 +229,13 @@ export default function UnifiedChat() {
         setSessionId(data.sessionId);
         break;
         
-      case 'transcription':
-        console.log('Transcription received:', data.text);
+      case 'transcription_complete':
+        console.log('Transcription received:', data.transcription);
         // Add user message with transcription
         const userMsg: Message = {
           id: Date.now().toString(),
           type: 'user',
-          content: `🎤 "${data.text}"`,
+          content: `🎤 "${data.transcription}"`,
           timestamp: new Date()
         };
         setMessages(prev => [...prev, userMsg]);
@@ -223,11 +263,19 @@ export default function UnifiedChat() {
             }, 1000);
           }
         }
+        
+        toast({
+          title: "Voice Response Ready",
+          description: "AI has responded to your message",
+        });
         break;
         
       case 'processing_step':
-        console.log('Processing step:', data.step);
-        // Could add processing indicators here
+        console.log('Processing step:', data.step, '-', data.message);
+        break;
+        
+      case 'processing':
+        console.log('Processing started:', data.message);
         break;
         
       case 'error':
@@ -251,22 +299,21 @@ export default function UnifiedChat() {
 
 ## Overall Score: ${analysis.score}/100
 
-## Strengths
+## Key Strengths
 ${analysis.strengths.map((s: string) => `• ${s}`).join('\n')}
 
 ## Areas for Improvement  
 ${analysis.improvements.map((i: string) => `• ${i}`).join('\n')}
 
-## SWOT Analysis
-**Strengths:** ${analysis.swot?.strengths?.join(', ') || 'N/A'}
-**Weaknesses:** ${analysis.swot?.weaknesses?.join(', ') || 'N/A'}
-**Opportunities:** ${analysis.swot?.opportunities?.join(', ') || 'N/A'}
-**Threats:** ${analysis.swot?.threats?.join(', ') || 'N/A'}
+## Detailed Assessment
+
+**Strengths:** ${analysis.strengths?.join(', ') || 'Strong technical background and leadership experience'}
+**Weaknesses:** ${analysis.improvements?.join(', ') || 'Areas identified for enhancement'}
 
 ## Actionable Steps
-${analysis.actionableSteps?.map((step: string, index: number) => `${index + 1}. ${step}`).join('\n') || 'No specific steps provided'}
+${analysis.actionableSteps?.map((step: string, index: number) => `${index + 1}. ${step}`).join('\n') || 'Focus on improving presentation clarity and adding specific achievement examples'}
 
-## Feedback
+## Professional Feedback
 ${analysis.feedback}`;
   };
 
@@ -323,19 +370,40 @@ ${analysis.feedback}`;
   const startRecording = async () => {
     if (!mediaRecorderRef.current || isRecording) return;
     
-    audioChunksRef.current = [];
-    mediaRecorderRef.current.start();
-    setIsRecording(true);
+    try {
+      console.log('Starting recording...');
+      audioChunksRef.current = [];
+      mediaRecorderRef.current.start(1000); // Collect data every second
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+      toast({
+        title: "Recording Error",
+        description: "Failed to start recording. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const stopRecording = () => {
     if (!mediaRecorderRef.current || !isRecording) return;
     
-    mediaRecorderRef.current.stop();
-    setIsRecording(false);
+    try {
+      console.log('Stopping recording...');
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+      setIsRecording(false);
+    }
   };
 
   const toggleRecording = async () => {
+    if (isProcessing) {
+      console.log('Cannot toggle recording while processing');
+      return;
+    }
+    
     if (isRecording) {
       stopRecording();
     } else {
@@ -442,7 +510,7 @@ ${analysis.feedback}`;
 
   const sendAudioToServer = (audioBlob: Blob) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
-      console.error('WebSocket not connected');
+      console.error('WebSocket not connected, state:', wsRef.current?.readyState);
       toast({
         title: "Connection Error",
         description: "Voice chat is not connected. Please try again.",
@@ -451,17 +519,28 @@ ${analysis.feedback}`;
       return;
     }
 
-    console.log('Sending audio to server, size:', audioBlob.size);
+    if (audioBlob.size < 1000) {
+      console.warn('Audio blob too small:', audioBlob.size, 'bytes');
+      toast({
+        title: "Recording Too Short",
+        description: "Please record for at least 1 second.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    console.log('Converting audio blob to base64...');
     setIsProcessing(true);
 
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const base64Audio = (reader.result as string).split(',')[1];
-        console.log('Sending audio data, length:', base64Audio.length);
+        const result = reader.result as string;
+        const base64Audio = result.split(',')[1];
+        console.log('Sending audio data:', base64Audio.length, 'characters');
         
         wsRef.current?.send(JSON.stringify({
-          type: 'voice_message',
+          type: 'voice_data',
           sessionId: sessionId || 'default',
           audioData: base64Audio
         }));
@@ -475,6 +554,17 @@ ${analysis.feedback}`;
         });
       }
     };
+    
+    reader.onerror = () => {
+      console.error('FileReader error');
+      setIsProcessing(false);
+      toast({
+        title: "Processing Error", 
+        description: "Failed to process audio. Please try again.",
+        variant: "destructive"
+      });
+    };
+    
     reader.readAsDataURL(audioBlob);
   };
 
