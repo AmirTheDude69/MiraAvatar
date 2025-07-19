@@ -61,6 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Analysis not found" });
       }
 
+      console.log(`Returning analysis ${id} with status: ${analysis.status}`);
       res.json(analysis);
     } catch (error) {
       console.error("Get analysis error:", error);
@@ -71,24 +72,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Background processing function
   async function processAnalysis(id: number) {
     try {
+      console.log(`Starting background processing for analysis ${id}`);
       const analysis = await storage.getCvAnalysis(id);
-      if (!analysis) return;
+      if (!analysis) {
+        console.error(`Analysis ${id} not found`);
+        return;
+      }
+
+      console.log(`Processing CV with ${analysis.extractedText.length} characters`);
 
       // Analyze with OpenAI
+      console.log("Calling OpenAI for analysis...");
       const aiAnalysis = await openaiService.analyzeCv(analysis.extractedText);
+      console.log("OpenAI analysis completed:", aiAnalysis);
       
       // Generate speech with ElevenLabs
+      console.log("Generating speech with ElevenLabs...");
       const audioUrl = await elevenLabsService.generateSpeech(aiAnalysis.feedback);
+      console.log(`Speech generated: ${audioUrl}`);
       
       // Update analysis with results
+      console.log("Updating analysis with results...");
       await storage.updateCvAnalysis(id, {
         analysis: aiAnalysis,
         audioUrl,
         status: "completed"
       });
+      console.log(`Analysis ${id} completed successfully`);
 
     } catch (error) {
       console.error("Analysis processing error:", error);
+      console.error("Error details:", (error as Error).message);
+      console.error("Stack trace:", (error as Error).stack);
       await storage.updateCvAnalysis(id, {
         status: "failed"
       });
