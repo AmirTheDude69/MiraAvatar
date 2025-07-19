@@ -52,32 +52,59 @@ export default function UnifiedChat() {
     if (interactionMode !== 'text' && !isConnected) {
       initializeVoiceChat();
     }
+    
+    // Cleanup on mode change
+    return () => {
+      if (interactionMode === 'text' && wsRef.current) {
+        cleanupVoiceResources();
+      }
+    };
   }, [interactionMode]);
 
   // Initialize voice chat connection
   const initializeVoiceChat = async () => {
     try {
+      console.log('Initializing voice chat...');
+      
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const wsUrl = `${protocol}//${window.location.host}/ws`;
+      console.log('Connecting to WebSocket:', wsUrl);
       
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
       ws.onopen = () => {
+        console.log('WebSocket connected successfully');
         setIsConnected(true);
-        const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        setSessionId(sessionId);
-        ws.send(JSON.stringify({ type: 'start_session', sessionId }));
+        toast({
+          title: "Voice Chat Ready",
+          description: "Connected successfully. You can now use voice features.",
+        });
       };
 
       ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        handleWebSocketMessage(data);
+        try {
+          const data = JSON.parse(event.data);
+          console.log('WebSocket message received:', data);
+          handleWebSocketMessage(data);
+        } catch (error) {
+          console.error('Failed to parse WebSocket message:', error);
+        }
       };
 
       ws.onclose = () => {
+        console.log('WebSocket connection closed');
         setIsConnected(false);
         setSessionId(null);
+      };
+
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        toast({
+          title: "Connection Error",
+          description: "Failed to connect to voice chat. Please try again.",
+          variant: "destructive"
+        });
       };
 
       // Initialize microphone
@@ -90,6 +117,35 @@ export default function UnifiedChat() {
         variant: "destructive"
       });
     }
+  };
+
+  // Cleanup voice resources
+  const cleanupVoiceResources = () => {
+    setIsContinuousMode(false);
+    setIsRecording(false);
+    
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+    
+    if (mediaRecorderRef.current) {
+      try {
+        if (mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      } catch (e) {
+        console.warn('Error stopping media recorder:', e);
+      }
+      mediaRecorderRef.current = null;
+    }
+    
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    audioChunksRef.current = [];
   };
 
   // Initialize media recorder
@@ -125,13 +181,33 @@ export default function UnifiedChat() {
 
   // Handle WebSocket messages
   const handleWebSocketMessage = (data: any) => {
+    console.log('Handling WebSocket message:', data.type);
+    
     switch (data.type) {
+      case 'session_started':
+        console.log('Session started:', data.sessionId);
+        setSessionId(data.sessionId);
+        break;
+        
+      case 'transcription':
+        console.log('Transcription received:', data.text);
+        // Add user message with transcription
+        const userMsg: Message = {
+          id: Date.now().toString(),
+          type: 'user',
+          content: `🎤 "${data.text}"`,
+          timestamp: new Date()
+        };
+        setMessages(prev => [...prev, userMsg]);
+        break;
+        
       case 'voice_response':
+        console.log('Voice response received');
         setIsProcessing(false);
         const newMessage: Message = {
           id: Date.now().toString(),
           type: 'assistant',
-          content: data.response,
+          content: data.response || data.text || 'Voice response received',
           audioUrl: data.audioUrl,
           timestamp: new Date()
         };
@@ -149,21 +225,23 @@ export default function UnifiedChat() {
         }
         break;
         
-      case 'cv_analysis_complete':
-        setIsProcessing(false);
-        const analysisMessage: Message = {
-          id: Date.now().toString(),
-          type: 'assistant',
-          content: formatCVAnalysis(data.analysis),
-          audioUrl: data.audioUrl,
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, analysisMessage]);
-        
-        if (data.audioUrl) {
-          playAudio(data.audioUrl);
-        }
+      case 'processing_step':
+        console.log('Processing step:', data.step);
+        // Could add processing indicators here
         break;
+        
+      case 'error':
+        console.error('WebSocket error:', data.message);
+        setIsProcessing(false);
+        toast({
+          title: "Voice Processing Error",
+          description: data.message || "An error occurred during voice processing",
+          variant: "destructive"
+        });
+        break;
+        
+      default:
+        console.log('Unknown WebSocket message type:', data.type);
     }
   };
 
@@ -363,26 +441,39 @@ ${analysis.feedback}`;
   };
 
   const sendAudioToServer = (audioBlob: Blob) => {
-    if (!wsRef.current || !sessionId) return;
+    if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket not connected');
+      toast({
+        title: "Connection Error",
+        description: "Voice chat is not connected. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
 
+    console.log('Sending audio to server, size:', audioBlob.size);
     setIsProcessing(true);
-    
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: '🎤 Voice message',
-      timestamp: new Date()
-    };
-    setMessages(prev => [...prev, userMessage]);
 
     const reader = new FileReader();
     reader.onload = () => {
-      const base64Audio = (reader.result as string).split(',')[1];
-      wsRef.current?.send(JSON.stringify({
-        type: 'voice_message',
-        sessionId,
-        audioData: base64Audio
-      }));
+      try {
+        const base64Audio = (reader.result as string).split(',')[1];
+        console.log('Sending audio data, length:', base64Audio.length);
+        
+        wsRef.current?.send(JSON.stringify({
+          type: 'voice_message',
+          sessionId: sessionId || 'default',
+          audioData: base64Audio
+        }));
+      } catch (error) {
+        console.error('Failed to send audio data:', error);
+        setIsProcessing(false);
+        toast({
+          title: "Send Error", 
+          description: "Failed to send voice message. Please try again.",
+          variant: "destructive"
+        });
+      }
     };
     reader.readAsDataURL(audioBlob);
   };
@@ -428,34 +519,86 @@ ${analysis.feedback}`;
 
       const data = await response.json();
       
-      const analysisMessage: Message = {
+      // Show processing message
+      const processingMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: formatCVAnalysis(data.analysis),
-        audioUrl: data.audioUrl,
+        content: `CV uploaded successfully. Analysis ID: ${data.id}. Processing your CV analysis...`,
         timestamp: new Date()
       };
+      setMessages(prev => [...prev, processingMessage]);
 
-      setMessages(prev => [...prev, analysisMessage]);
-
-      if (data.audioUrl) {
-        playAudio(data.audioUrl);
-      }
+      // Poll for analysis results
+      pollForAnalysis(data.id);
 
       toast({
-        title: "CV Analysis Complete",
-        description: "Your CV has been analyzed successfully.",
+        title: "CV Uploaded",
+        description: "Analysis in progress. Please wait...",
       });
     } catch (error) {
       console.error('CV upload failed:', error);
       toast({
         title: "Upload Failed",
-        description: "Failed to upload and analyze CV. Please try again.",
+        description: "Failed to upload CV. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setIsProcessing(false);
     }
+  };
+
+  const pollForAnalysis = async (analysisId: number) => {
+    const maxAttempts = 30; // 30 seconds max
+    let attempts = 0;
+
+    const poll = async () => {
+      try {
+        attempts++;
+        const response = await fetch(`/api/cv/analysis/${analysisId}`);
+        if (!response.ok) throw new Error('Failed to get analysis');
+
+        const data = await response.json();
+        
+        if (data.status === 'completed' && data.analysis) {
+          // Analysis complete - show results
+          const analysisMessage: Message = {
+            id: (Date.now() + 2).toString(),
+            type: 'assistant',
+            content: formatCVAnalysis(data.analysis),
+            audioUrl: data.audioUrl,
+            timestamp: new Date()
+          };
+
+          setMessages(prev => [...prev, analysisMessage]);
+
+          if (data.audioUrl) {
+            playAudio(data.audioUrl);
+          }
+
+          toast({
+            title: "CV Analysis Complete",
+            description: "Your CV has been analyzed successfully.",
+          });
+          setIsProcessing(false);
+        } else if (data.status === 'failed') {
+          throw new Error('Analysis failed');
+        } else if (attempts >= maxAttempts) {
+          throw new Error('Analysis timeout');
+        } else {
+          // Still processing, continue polling
+          setTimeout(poll, 1000);
+        }
+      } catch (error) {
+        console.error('Analysis polling error:', error);
+        toast({
+          title: "Analysis Failed",
+          description: "Failed to complete CV analysis. Please try again.",
+          variant: "destructive"
+        });
+        setIsProcessing(false);
+      }
+    };
+
+    poll();
   };
 
   return (

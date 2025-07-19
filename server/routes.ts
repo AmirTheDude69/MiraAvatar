@@ -39,8 +39,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Upload and analyze CV
-  app.post("/api/cv/upload", upload.single('cv'), async (req, res) => {
+  // Upload and analyze CV (unified chat endpoint)
+  app.post("/api/upload-cv", upload.single('cv'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
