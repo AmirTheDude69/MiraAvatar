@@ -132,10 +132,19 @@ export default function Chat() {
           };
           
           recorder.onstop = () => {
+            console.log('Recording stopped, chunks:', audioChunks.length);
             if (audioChunks.length > 0) {
               const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/wav' });
+              console.log('Created audio blob:', audioBlob.size, 'bytes');
               voiceChatMutation.mutate(audioBlob);
               setAudioChunks([]);
+            } else {
+              console.warn('No audio chunks collected');
+              toast({
+                title: "No audio recorded",
+                description: "Please try speaking again",
+                variant: "destructive"
+              });
             }
           };
         })
@@ -173,9 +182,11 @@ export default function Chat() {
     }
 
     if (isRecording) {
+      console.log('Stopping recording...');
       mediaRecorder.stop();
       setIsRecording(false);
     } else {
+      console.log('Starting recording...');
       setAudioChunks([]);
       mediaRecorder.start(1000); // Record in 1-second chunks for better data collection
       setIsRecording(true);

@@ -198,18 +198,32 @@ export default function LiveVoiceChat() {
   // Send audio to server via WebSocket
   const sendAudioToServer = async (audioBlob: Blob) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+      console.error('WebSocket not connected');
       return;
     }
 
     try {
-      // Convert blob to base64
+      console.log('Sending audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
+      
+      // Convert blob to base64 in chunks for large files
       const arrayBuffer = await audioBlob.arrayBuffer();
-      const base64Audio = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      const uint8Array = new Uint8Array(arrayBuffer);
+      
+      // Convert to base64 in smaller chunks to avoid stack overflow
+      let base64Audio = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < uint8Array.length; i += chunkSize) {
+        const chunk = uint8Array.slice(i, i + chunkSize);
+        base64Audio += btoa(String.fromCharCode.apply(null, Array.from(chunk)));
+      }
+      
+      console.log('Base64 audio length:', base64Audio.length);
       
       wsRef.current.send(JSON.stringify({
         type: 'voice_data',
         audioData: base64Audio,
-        sessionId
+        sessionId,
+        mimeType: audioBlob.type
       }));
     } catch (error) {
       console.error('Error sending audio:', error);

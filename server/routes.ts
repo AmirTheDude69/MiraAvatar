@@ -325,45 +325,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Mark as processing
           session.isProcessing = true;
           
+          console.log('Received voice data, size:', message.audioData?.length || 0);
+          
           ws.send(JSON.stringify({
             type: 'processing',
             message: 'Processing your voice input...'
           }));
 
-          // Convert base64 audio to buffer
-          const audioBuffer = Buffer.from(message.audioData, 'base64');
-          
-          // Process voice input with conversation context
-          const result = await processVoiceWithContext(audioBuffer, session.conversationHistory);
-          
-          // Update conversation history
-          session.conversationHistory.push(
-            { role: 'user', content: result.text },
-            { role: 'assistant', content: result.response }
-          );
+          try {
+            // Convert base64 audio to buffer
+            const audioBuffer = Buffer.from(message.audioData, 'base64');
+            console.log('Created audio buffer:', audioBuffer.length, 'bytes');
+            
+            // Process voice input with conversation context
+            const result = await processVoiceWithContext(audioBuffer, session.conversationHistory);
+            console.log('Voice processing result:', { text: result.text, responseLength: result.response.length });
+            
+            // Update conversation history
+            session.conversationHistory.push(
+              { role: 'user', content: result.text },
+              { role: 'assistant', content: result.response }
+            );
 
-          // Keep conversation history manageable (last 10 exchanges)
-          if (session.conversationHistory.length > 20) {
-            session.conversationHistory = session.conversationHistory.slice(-20);
+            // Keep conversation history manageable (last 10 exchanges)
+            if (session.conversationHistory.length > 20) {
+              session.conversationHistory = session.conversationHistory.slice(-20);
+            }
+
+            // Save to database
+            await storage.createChatMessage({
+              message: result.text,
+              response: result.response,
+              type: "voice"
+            });
+
+            // Send response
+            ws.send(JSON.stringify({
+              type: 'voice_response',
+              userText: result.text,
+              response: result.response,
+              audioUrl: result.audioUrl,
+              sessionId
+            }));
+
+            session.isProcessing = false;
+          } catch (error) {
+            console.error('Voice processing error in WebSocket:', error);
+            session.isProcessing = false;
+            
+            ws.send(JSON.stringify({
+              type: 'error',
+              message: `Voice processing failed: ${error.message}`
+            }));
           }
-
-          // Save to database
-          await storage.createChatMessage({
-            message: result.text,
-            response: result.response,
-            type: "voice"
-          });
-
-          // Send response
-          ws.send(JSON.stringify({
-            type: 'voice_response',
-            userText: result.text,
-            response: result.response,
-            audioUrl: result.audioUrl,
-            sessionId
-          }));
-
-          session.isProcessing = false;
         }
         
         if (message.type === 'ping') {
