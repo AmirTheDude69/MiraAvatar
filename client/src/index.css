@@ -169,6 +169,25 @@
     background: rgba(255, 255, 255, 0.3);
   }
 
+  /* Message bubble scrollbar - smaller for nested scrolling */
+  .message-bubble::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .message-bubble::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+  }
+
+  .message-bubble::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+  }
+
+  .message-bubble::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+  }
+
   /* Performance optimizations */
   .scroll-container {
     transform: translateZ(0);

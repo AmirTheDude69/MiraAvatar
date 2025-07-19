@@ -42,11 +42,11 @@ export default function UnifiedChat() {
   
   const { toast } = useToast();
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom with proper handling for long messages
   useEffect(() => {
     const timer = setTimeout(() => {
-      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 200);
     return () => clearTimeout(timer);
   }, [messages]);
 
@@ -699,7 +699,7 @@ ${analysis.feedback}`;
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-green-500/20 blur-3xl" />
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-8 h-screen flex flex-col">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-8 h-screen flex flex-col min-h-0">
         {/* Header with interaction modes */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-center mb-6 hyperdash-gradient bg-clip-text text-transparent">
@@ -738,9 +738,9 @@ ${analysis.feedback}`;
         </div>
 
         {/* Chat Area */}
-        <Card className="flex-1 glass-enhanced border border-border/30 mb-6">
+        <Card className="flex-1 glass-enhanced border border-border/30 mb-6 overflow-hidden">
           <CardContent className="p-0 h-full flex flex-col">
-            <ScrollArea className="flex-1 p-6 scroll-container scrollbar-thin">
+            <ScrollArea className="flex-1 p-6 scroll-container scrollbar-thin max-h-[70vh] overflow-y-auto">
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
@@ -770,7 +770,7 @@ ${analysis.feedback}`;
                       {/* Message bubble */}
                       <div className={`flex-1 max-w-[75%] min-w-0 ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
                         <div
-                          className={`message-bubble inline-block p-4 rounded-2xl shadow-xl backdrop-blur-xl border transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${
+                          className={`message-bubble inline-block p-4 rounded-2xl shadow-xl backdrop-blur-xl border transition-all duration-300 hover:shadow-2xl max-h-[60vh] overflow-y-auto ${
                             message.type === 'user'
                               ? 'bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 text-white border-blue-400/20 rounded-br-md'
                               : 'bg-gradient-to-br from-gray-800/95 to-gray-900/95 border-white/10 text-white rounded-bl-md'
