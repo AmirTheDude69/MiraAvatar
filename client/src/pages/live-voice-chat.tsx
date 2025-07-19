@@ -51,13 +51,28 @@ export default function LiveVoiceChat() {
 
     setConnectionStatus('connecting');
     
+    // Construct WebSocket URL properly
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const host = window.location.host;
+    const wsUrl = `${protocol}//${host}/ws`;
     
-    wsRef.current = new WebSocket(wsUrl);
+    console.log('Connecting to WebSocket:', wsUrl);
+    
+    try {
+      wsRef.current = new WebSocket(wsUrl);
+    } catch (error) {
+      console.error('Failed to create WebSocket:', error);
+      setConnectionStatus('disconnected');
+      toast({
+        title: "Connection Failed",
+        description: "Unable to establish WebSocket connection",
+        variant: "destructive"
+      });
+      return;
+    }
 
     wsRef.current.onopen = () => {
-      console.log('WebSocket connected');
+      console.log('WebSocket connected successfully');
       setConnectionStatus('connected');
       setIsConnected(true);
       toast({
@@ -107,24 +122,27 @@ export default function LiveVoiceChat() {
       }
     };
 
-    wsRef.current.onclose = () => {
-      console.log('WebSocket disconnected');
+    wsRef.current.onclose = (event) => {
+      console.log('WebSocket disconnected:', event.code, event.reason);
       setConnectionStatus('disconnected');
       setIsConnected(false);
       setSessionId(null);
-      toast({
-        title: "Disconnected",
-        description: "Voice chat session ended",
-        variant: "destructive"
-      });
+      if (event.code !== 1000) { // 1000 is normal closure
+        toast({
+          title: "Disconnected",
+          description: "Voice chat session ended unexpectedly",
+          variant: "destructive"
+        });
+      }
     };
 
     wsRef.current.onerror = (error) => {
       console.error('WebSocket error:', error);
       setConnectionStatus('disconnected');
+      setIsConnected(false);
       toast({
         title: "Connection Error",
-        description: "Failed to connect to voice chat",
+        description: "WebSocket connection failed. Please try again.",
         variant: "destructive"
       });
     };
@@ -133,7 +151,7 @@ export default function LiveVoiceChat() {
   // Disconnect WebSocket
   const disconnectWebSocket = () => {
     if (wsRef.current) {
-      wsRef.current.close();
+      wsRef.current.close(1000, 'User disconnected');
       wsRef.current = null;
     }
     stopRecording();
@@ -209,12 +227,40 @@ export default function LiveVoiceChat() {
       const arrayBuffer = await audioBlob.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
       
-      // Convert to base64 in smaller chunks to avoid stack overflow
+      // Convert to base64 safely
       let base64Audio = '';
-      const chunkSize = 8192;
-      for (let i = 0; i < uint8Array.length; i += chunkSize) {
-        const chunk = uint8Array.slice(i, i + chunkSize);
-        base64Audio += btoa(String.fromCharCode.apply(null, Array.from(chunk)));
+      try {
+        // Use FileReader for safer base64 conversion
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => {
+            try {
+              const result = reader.result as string;
+              if (result && result.includes(',')) {
+                // Remove data URL prefix
+                const base64Data = result.split(',')[1];
+                resolve(base64Data);
+              } else {
+                reject(new Error('Invalid FileReader result'));
+              }
+            } catch (err) {
+              reject(err);
+            }
+          };
+          reader.onerror = () => reject(new Error('FileReader error'));
+        });
+        
+        reader.readAsDataURL(audioBlob);
+        base64Audio = await base64Promise;
+      } catch (error) {
+        console.error('Base64 conversion error:', error);
+        // Fallback to manual conversion
+        const uint8Array = new Uint8Array(arrayBuffer);
+        const chunkSize = 8192;
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+          const chunk = uint8Array.slice(i, i + chunkSize);
+          base64Audio += btoa(String.fromCharCode.apply(null, Array.from(chunk)));
+        }
       }
       
       console.log('Base64 audio length:', base64Audio.length);
