@@ -138,6 +138,15 @@ export default function LiveVoiceChat() {
           
           if (data.audioUrl) {
             playAudio(data.audioUrl);
+            
+            // In continuous mode, automatically restart listening after AI response
+            if (isContinuousMode) {
+              setTimeout(() => {
+                if (isContinuousMode) {
+                  restartContinuousListening();
+                }
+              }, 1000); // Wait 1 second after audio starts playing
+            }
           }
           
           if (data.chainedProcessing) {
@@ -204,6 +213,8 @@ export default function LiveVoiceChat() {
 
   // Cleanup media resources
   const cleanupMediaResources = () => {
+    setIsContinuousMode(false);
+    
     if (mediaRecorderRef.current) {
       try {
         if (mediaRecorderRef.current.state !== 'inactive') {
@@ -351,7 +362,7 @@ export default function LiveVoiceChat() {
 
   // Setup silence detection for continuous mode
   const setupSilenceDetection = () => {
-    if (!streamRef.current) return;
+    if (!streamRef.current || !isContinuousMode) return;
 
     const audioContext = new AudioContext();
     const source = audioContext.createMediaStreamSource(streamRef.current);
@@ -361,27 +372,37 @@ export default function LiveVoiceChat() {
 
     const dataArray = new Uint8Array(analyser.frequencyBinCount);
     let silenceCount = 0;
-    const silenceThreshold = 30; // Adjustable silence threshold
-    const silenceLimit = 20; // Number of silent frames before processing (roughly 1 second)
+    let isCurrentlySpeaking = false;
+    const silenceThreshold = 35; // Adjustable silence threshold
+    const silenceLimit = 25; // Number of silent frames before processing (roughly 1.25 seconds)
+    const speechThreshold = 50; // Threshold to detect actual speech vs background noise
 
     const checkAudioLevel = () => {
-      if (!isContinuousMode) return;
+      if (!isContinuousMode || isProcessing) return;
 
       analyser.getByteFrequencyData(dataArray);
       const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
 
-      if (average < silenceThreshold) {
+      // Detect if user is currently speaking
+      if (average > speechThreshold) {
+        isCurrentlySpeaking = true;
+        silenceCount = 0; // Reset silence count when speech is detected
+      } else if (average < silenceThreshold) {
         silenceCount++;
-        if (silenceCount >= silenceLimit && audioChunksRef.current.length > 0) {
-          // Silence detected, process current audio
+        
+        // Only process if we were speaking and now there's silence
+        if (isCurrentlySpeaking && silenceCount >= silenceLimit && audioChunksRef.current.length > 0) {
+          console.log('🤫 Silence detected after speech, processing...');
           processContinuousAudio();
           silenceCount = 0;
+          isCurrentlySpeaking = false;
         }
       } else {
-        silenceCount = 0; // Reset silence count when sound is detected
+        // Medium level audio - might be background noise, don't reset completely
+        if (silenceCount > 0) silenceCount--;
       }
 
-      if (isContinuousMode) {
+      if (isContinuousMode && !isProcessing) {
         requestAnimationFrame(checkAudioLevel);
       }
     };
@@ -398,11 +419,50 @@ export default function LiveVoiceChat() {
     
     // Only process if blob has meaningful size (not just silence)
     if (audioBlob.size > 5000) { // Minimum size threshold
+      console.log('🎤 Auto-processing speech in continuous mode:', audioBlob.size, 'bytes');
+      
+      // Stop current recording temporarily while processing
+      setIsRecording(false);
+      if (mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+      
       sendAudioToServer(audioBlob);
     }
 
-    // Clear chunks and continue recording
+    // Clear chunks
     audioChunksRef.current = [];
+  };
+
+  // Restart continuous listening after processing
+  const restartContinuousListening = async () => {
+    if (!isContinuousMode) return;
+    
+    console.log('🔄 Restarting continuous listening...');
+    
+    try {
+      // Ensure MediaRecorder is ready
+      if (!mediaRecorderRef.current || mediaRecorderRef.current.state !== 'inactive') {
+        await initializeMediaRecorder();
+      }
+      
+      // Restart recording
+      audioChunksRef.current = [];
+      mediaRecorderRef.current.start(250);
+      setIsRecording(true);
+      
+      // Restart silence detection
+      setupSilenceDetection();
+      
+      console.log('✅ Continuous listening restarted successfully');
+    } catch (error) {
+      console.error('Error restarting continuous listening:', error);
+      toast({
+        title: "Continuous Mode Error",
+        description: "Failed to restart listening. Click the button to try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Start recording
@@ -756,19 +816,19 @@ export default function LiveVoiceChat() {
                   {isProcessing
                     ? `AI is processing... ${processingStep ? `(${processingStep})` : ''}`
                     : isContinuousMode
-                    ? "Listening continuously... Just speak naturally!"
+                    ? "🎙️ Live conversation active - speak naturally!"
                     : isRecording
                     ? (interactionMode === 'hold' ? "Release to send..." : "Click to stop recording...")
                     : (interactionMode === 'hold' ? "Hold to speak" : 
                        interactionMode === 'click' ? "Click to start speaking" : 
-                       "Click to start continuous conversation")}
+                       "Click to start live conversation")}
                 </p>
                 
                 {/* Mode indicator */}
                 <p className="text-xs text-muted-foreground/70 mt-1">
                   {interactionMode === 'hold' ? 'Hold & Release Mode' : 
                    interactionMode === 'click' ? 'Click to Toggle Mode' : 
-                   'Continuous Conversation Mode'}
+                   isContinuousMode ? '🔴 LIVE - Auto-listening after each response' : 'Live Conversation Mode'}
                 </p>
               </div>
             </CardContent>
