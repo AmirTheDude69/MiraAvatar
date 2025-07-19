@@ -35,6 +35,8 @@ export default function Home() {
     },
     onSuccess: (data) => {
       setAnalysisId(data.id);
+      // Clear any existing cache for this analysis
+      queryClient.removeQueries({ queryKey: ['/api/cv/analysis', data.id] });
       toast({
         title: "Upload successful",
         description: "Your CV is being analyzed. Please wait...",
@@ -53,17 +55,21 @@ export default function Home() {
   const { data: analysis, error: analysisError, isLoading } = useQuery({
     queryKey: ['/api/cv/analysis', analysisId],
     enabled: !!analysisId,
-    refetchInterval: (data, query) => {
-      console.log('Polling analysis:', analysisId, 'Status:', data?.status, 'Data:', query);
+    refetchInterval: (queryData) => {
+      const data = queryData?.state?.data;
+      console.log('Polling analysis:', analysisId, 'Status:', data?.status, 'Full Data:', data);
+      console.log('Query state:', queryData?.state);
       // Continue polling if still processing or if we don't have data yet
       if (!data || data.status === 'processing') {
-        return 1500; // Poll every 1.5 seconds for faster updates
+        return 1000; // Poll every 1 second for faster updates
       }
+      console.log('Stopping polling - analysis completed with status:', data.status);
       return false; // Stop polling when completed
     },
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
     staleTime: 0, // Override default to always fetch fresh data
+    gcTime: 0, // Disable garbage collection to prevent data loss
     retry: (failureCount, error) => {
       console.log('Query retry attempt:', failureCount, error);
       return failureCount < 3;
@@ -82,7 +88,13 @@ export default function Home() {
   // Force refresh the current analysis
   const forceRefresh = () => {
     if (analysisId) {
+      console.log('Force refreshing analysis:', analysisId);
+      queryClient.removeQueries({ queryKey: ['/api/cv/analysis', analysisId] });
       queryClient.invalidateQueries({ queryKey: ['/api/cv/analysis', analysisId] });
+      // Force immediate refetch
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ['/api/cv/analysis', analysisId] });
+      }, 100);
     }
   };
 
@@ -101,6 +113,8 @@ export default function Home() {
   console.log('Analysis data:', analysis);
   console.log('Current step:', currentStep);
   console.log('Analysis ID:', analysisId);
+  console.log('Analysis status from data:', analysis?.status);
+  console.log('Is loading:', isLoading);
 
   return (
     <div className="min-h-screen bg-background font-sans relative overflow-hidden">
