@@ -62,7 +62,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`Returning analysis ${id} with status: ${analysis.status}`);
-      res.json(analysis);
+      
+      // Create a response object with important fields first and truncated text
+      const response = {
+        id: analysis.id,
+        status: analysis.status,
+        fileName: analysis.fileName,
+        analysis: analysis.analysis,
+        audioUrl: analysis.audioUrl,
+        createdAt: analysis.createdAt,
+        // Truncate extracted text to prevent response size issues
+        extractedText: analysis.extractedText.substring(0, 1000) + (analysis.extractedText.length > 1000 ? '...' : '')
+      };
+      
+      console.log('Sending response with status:', response.status);
+      res.json(response);
     } catch (error) {
       console.error("Get analysis error:", error);
       res.status(500).json({ message: "Failed to get analysis" });

@@ -53,6 +53,7 @@ export default function Home() {
     queryKey: ['/api/cv/analysis', analysisId],
     enabled: !!analysisId,
     refetchInterval: (data) => {
+      console.log('Polling analysis:', analysisId, 'Status:', data?.status);
       // Poll every 2 seconds if still processing
       return data?.status === 'processing' ? 2000 : false;
     },
@@ -72,6 +73,11 @@ export default function Home() {
       ? 'feedback' 
       : 'processing'
     : 'upload';
+
+  // Debug logging
+  console.log('Analysis data:', analysis);
+  console.log('Current step:', currentStep);
+  console.log('Analysis ID:', analysisId);
 
   return (
     <div className="min-h-screen bg-background font-sans">
