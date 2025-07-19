@@ -98,16 +98,16 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
   return (
     <div className="space-y-6">
       {/* Avatar Display Card */}
-      <Card className="modern-card min-h-96">
+      <Card className="glass-card shadow-xl border-border/20 min-h-96">
         <CardContent className="p-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold text-foreground mb-2 gradient-text">AI Career Coach</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2">Your AI Career Coach</h3>
             <p className="text-muted-foreground">
               {isCompleted 
-                ? "Analysis complete - Ready to provide feedback" 
+                ? "Ready to provide personalized feedback" 
                 : isProcessing 
                   ? "Analyzing your CV..." 
-                  : "Upload your CV to get started"
+                  : "Waiting for your CV to provide personalized feedback"
               }
             </p>
           </div>
@@ -115,16 +115,21 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
           {/* Avatar Container */}
           <div className="flex items-center justify-center mb-6">
             <div className="relative">
-              <div className={`avatar-container ${isSpeaking ? 'avatar-speaking' : ''}`}>
-                <User className="text-primary w-12 h-12" />
+              <div className={`w-32 h-32 grok-gradient rounded-full flex items-center justify-center avatar-glow ${
+                isSpeaking ? 'animate-pulse' : ''
+              }`}>
+                <User className="text-white w-12 h-12" />
               </div>
+              {isSpeaking && (
+                <div className="absolute -inset-4 border-2 border-primary rounded-full pulse-ring"></div>
+              )}
             </div>
           </div>
           
           {/* Status Display */}
           <div className="text-center space-y-4">
             {!isProcessing && !isCompleted && (
-              <div className="status-card">
+              <div className="bg-card/50 rounded-lg p-4 border border-border/30">
                 <Clock className="text-muted-foreground w-8 h-8 mb-2 mx-auto" />
                 <p className="text-muted-foreground font-medium">Ready to analyze your CV</p>
                 <p className="text-sm text-muted-foreground/70 mt-1">Upload your PDF to get started</p>
@@ -132,15 +137,15 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
             )}
             
             {isProcessing && (
-              <div className="processing-indicator">
+              <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
                 <div className="flex items-center justify-center space-x-3 mb-3">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                  <p className="text-primary font-medium">Processing Analysis...</p>
+                  <p className="text-primary font-medium">Analyzing your CV...</p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground">Extracting text</span>
-                    <span className="text-primary">✓</span>
+                    <span className="text-green-400">✓</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground">AI analysis</span>
@@ -155,9 +160,9 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
             )}
 
             {isCompleted && (
-              <div className="success-indicator">
-                <Volume2 className="text-primary w-8 h-8 mb-2 mx-auto" />
-                <p className="text-primary font-medium">
+              <div className="bg-green-400/10 rounded-lg p-4 border border-green-400/20">
+                <Volume2 className="text-green-400 w-8 h-8 mb-2 mx-auto" />
+                <p className="text-green-400 font-medium">
                   {isSpeaking ? 'Providing feedback...' : 'Ready to provide feedback'}
                 </p>
               </div>
