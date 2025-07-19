@@ -1,6 +1,19 @@
-import { users, cvAnalyses, type User, type InsertUser, type CvAnalysis, type InsertCvAnalysis } from "@shared/schema";
+import { 
+  users, 
+  cvAnalyses, 
+  chatMessages, 
+  voiceSessions,
+  type User, 
+  type InsertUser, 
+  type CvAnalysis, 
+  type InsertCvAnalysis,
+  type ChatMessage,
+  type InsertChatMessage,
+  type VoiceSession,
+  type InsertVoiceSession
+} from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -9,6 +22,12 @@ export interface IStorage {
   createCvAnalysis(analysis: InsertCvAnalysis): Promise<CvAnalysis>;
   getCvAnalysis(id: number): Promise<CvAnalysis | undefined>;
   updateCvAnalysis(id: number, updates: Partial<CvAnalysis>): Promise<CvAnalysis | undefined>;
+  createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  getChatMessages(limit?: number): Promise<ChatMessage[]>;
+  updateChatMessage(id: number, updates: Partial<ChatMessage>): Promise<ChatMessage | undefined>;
+  createVoiceSession(session: InsertVoiceSession): Promise<VoiceSession>;
+  getVoiceSession(sessionId: string): Promise<VoiceSession | undefined>;
+  updateVoiceSession(sessionId: string, updates: Partial<VoiceSession>): Promise<VoiceSession | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -51,6 +70,56 @@ export class DatabaseStorage implements IStorage {
       .update(cvAnalyses)
       .set(updates)
       .where(eq(cvAnalyses.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const [chatMessage] = await db
+      .insert(chatMessages)
+      .values(message)
+      .returning();
+    return chatMessage;
+  }
+
+  async getChatMessages(limit: number = 50): Promise<ChatMessage[]> {
+    return await db
+      .select()
+      .from(chatMessages)
+      .orderBy(desc(chatMessages.createdAt))
+      .limit(limit);
+  }
+
+  async updateChatMessage(id: number, updates: Partial<ChatMessage>): Promise<ChatMessage | undefined> {
+    const [updated] = await db
+      .update(chatMessages)
+      .set(updates)
+      .where(eq(chatMessages.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async createVoiceSession(session: InsertVoiceSession): Promise<VoiceSession> {
+    const [voiceSession] = await db
+      .insert(voiceSessions)
+      .values(session)
+      .returning();
+    return voiceSession;
+  }
+
+  async getVoiceSession(sessionId: string): Promise<VoiceSession | undefined> {
+    const [session] = await db
+      .select()
+      .from(voiceSessions)
+      .where(eq(voiceSessions.sessionId, sessionId));
+    return session || undefined;
+  }
+
+  async updateVoiceSession(sessionId: string, updates: Partial<VoiceSession>): Promise<VoiceSession | undefined> {
+    const [updated] = await db
+      .update(voiceSessions)
+      .set(updates)
+      .where(eq(voiceSessions.sessionId, sessionId))
       .returning();
     return updated || undefined;
   }

@@ -88,6 +88,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Direct AI Chat endpoint
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { message, includeVoice = false } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Get AI response
+      const aiResponse = await openaiService.chatWithAI(message, includeVoice);
+      
+      // Save to database
+      const chatMessage = await storage.createChatMessage({
+        message,
+        response: aiResponse.text,
+        type: includeVoice ? "voice" : "text"
+      });
+
+      // Update with audio URL if voice was requested
+      if (includeVoice && aiResponse.audioUrl) {
+        await storage.updateChatMessage(chatMessage.id, {
+          audioUrl: aiResponse.audioUrl
+        });
+      }
+
+      res.json({
+        id: chatMessage.id,
+        message,
+        response: aiResponse.text,
+        audioUrl: aiResponse.audioUrl,
+        type: includeVoice ? "voice" : "text"
+      });
+
+    } catch (error) {
+      console.error("Chat error:", error);
+      res.status(500).json({ message: "Failed to process chat message" });
+    }
+  });
+
+  // Get chat history
+  app.get("/api/chat/history", async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 20;
+      const messages = await storage.getChatMessages(limit);
+      res.json(messages.reverse()); // Return in chronological order
+    } catch (error) {
+      console.error("Chat history error:", error);
+      res.status(500).json({ message: "Failed to get chat history" });
+    }
+  });
+
+  // Voice chat endpoint (for live voice input)
+  app.post("/api/voice/chat", upload.single('audio'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Audio file is required" });
+      }
+
+      // Process voice input
+      const result = await openaiService.processVoiceInput(req.file.buffer);
+      
+      // Save to database
+      const chatMessage = await storage.createChatMessage({
+        message: result.text,
+        response: result.response,
+        type: "voice"
+      });
+
+      await storage.updateChatMessage(chatMessage.id, {
+        audioUrl: result.audioUrl
+      });
+
+      res.json({
+        id: chatMessage.id,
+        userText: result.text,
+        response: result.response,
+        audioUrl: result.audioUrl,
+        type: "voice"
+      });
+
+    } catch (error) {
+      console.error("Voice chat error:", error);
+      res.status(500).json({ message: "Failed to process voice input" });
+    }
+  });
+
+  // Voice session management
+  app.post("/api/voice/session", async (req, res) => {
+    try {
+      const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      const session = await storage.createVoiceSession({
+        sessionId,
+        status: "active"
+      });
+
+      res.json({
+        sessionId: session.sessionId,
+        status: session.status
+      });
+
+    } catch (error) {
+      console.error("Voice session error:", error);
+      res.status(500).json({ message: "Failed to create voice session" });
+    }
+  });
+
+  app.put("/api/voice/session/:sessionId", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const { status } = req.body;
+
+      const session = await storage.updateVoiceSession(sessionId, {
+        status,
+        lastActivity: new Date()
+      });
+
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+
+      res.json({
+        sessionId: session.sessionId,
+        status: session.status
+      });
+
+    } catch (error) {
+      console.error("Voice session update error:", error);
+      res.status(500).json({ message: "Failed to update voice session" });
+    }
+  });
+
   // Background processing function
   async function processAnalysis(id: number) {
     try {

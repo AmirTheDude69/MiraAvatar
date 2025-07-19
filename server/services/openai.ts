@@ -57,6 +57,71 @@ Respond with JSON in this exact format:
       throw new Error(`Failed to analyze CV: ${error}`);
     }
   }
+
+  // Direct chat with AI
+  async chatWithAI(message: string, includeVoice: boolean = false): Promise<{ text: string; audioUrl?: string }> {
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful AI career coach and assistant. Provide friendly, professional, and informative responses to user questions. Keep responses conversational and engaging."
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 500
+      });
+
+      const text = response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
+      
+      const result: { text: string; audioUrl?: string } = { text };
+      
+      if (includeVoice) {
+        // Generate audio for the response if requested
+        const { elevenLabsService } = await import("./elevenlabs");
+        result.audioUrl = await elevenLabsService.generateSpeech(text);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("OpenAI chat error:", error);
+      throw new Error(`Failed to chat with AI: ${error}`);
+    }
+  }
+
+  // Live voice chat processing
+  async processVoiceInput(audioData: Buffer): Promise<{ text: string; response: string; audioUrl: string }> {
+    try {
+      // First, transcribe the audio input using OpenAI Whisper
+      const transcription = await openai.audio.transcriptions.create({
+        file: new File([audioData], "audio.wav", { type: "audio/wav" }),
+        model: "whisper-1",
+      });
+
+      const userText = transcription.text;
+      
+      // Generate AI response
+      const chatResponse = await this.chatWithAI(userText, false);
+      
+      // Generate voice response
+      const { elevenLabsService } = await import("./elevenlabs");
+      const audioUrl = await elevenLabsService.generateSpeech(chatResponse.text);
+      
+      return {
+        text: userText,
+        response: chatResponse.text,
+        audioUrl
+      };
+    } catch (error) {
+      console.error("Voice processing error:", error);
+      throw new Error(`Failed to process voice input: ${error}`);
+    }
+  }
 }
 
 export const openaiService = new OpenAIService();
