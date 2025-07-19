@@ -110,7 +110,19 @@ export default function Chat() {
     if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
       navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
-          const recorder = new MediaRecorder(stream);
+          // Try different MIME types for better compatibility
+          let mimeType = 'audio/webm;codecs=opus';
+          if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'audio/webm';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+              mimeType = 'audio/wav';
+              if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = ''; // Use default
+              }
+            }
+          }
+          
+          const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
           setMediaRecorder(recorder);
           
           recorder.ondataavailable = (event) => {
@@ -120,9 +132,11 @@ export default function Chat() {
           };
           
           recorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-            voiceChatMutation.mutate(audioBlob);
-            setAudioChunks([]);
+            if (audioChunks.length > 0) {
+              const audioBlob = new Blob(audioChunks, { type: mimeType || 'audio/wav' });
+              voiceChatMutation.mutate(audioBlob);
+              setAudioChunks([]);
+            }
           };
         })
         .catch(err => {
@@ -134,7 +148,7 @@ export default function Chat() {
           });
         });
     }
-  }, [audioChunks]);
+  }, []);
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -163,7 +177,7 @@ export default function Chat() {
       setIsRecording(false);
     } else {
       setAudioChunks([]);
-      mediaRecorder.start();
+      mediaRecorder.start(1000); // Record in 1-second chunks for better data collection
       setIsRecording(true);
     }
   };

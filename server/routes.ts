@@ -20,6 +20,19 @@ const upload = multer({
   }
 });
 
+const audioUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB limit for audio
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['audio/wav', 'audio/mpeg', 'audio/mp3', 'audio/webm', 'audio/ogg'];
+    if (allowedTypes.includes(file.mimetype) || file.originalname.endsWith('.wav') || file.originalname.endsWith('.mp3') || file.originalname.endsWith('.webm')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only audio files are allowed'));
+    }
+  }
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
   app.get("/api/health", (req, res) => {
@@ -142,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Voice chat endpoint (for live voice input)
-  app.post("/api/voice/chat", upload.single('audio'), async (req, res) => {
+  app.post("/api/voice/chat", audioUpload.single('audio'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "Audio file is required" });

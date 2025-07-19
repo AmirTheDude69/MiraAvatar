@@ -155,9 +155,19 @@ export default function LiveVoiceChat() {
         }
       })
         .then(stream => {
-          const mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'audio/webm;codecs=opus'
-          });
+          // Try different MIME types for better compatibility
+          let mimeType = 'audio/webm;codecs=opus';
+          if (!MediaRecorder.isTypeSupported(mimeType)) {
+            mimeType = 'audio/webm';
+            if (!MediaRecorder.isTypeSupported(mimeType)) {
+              mimeType = 'audio/wav';
+              if (!MediaRecorder.isTypeSupported(mimeType)) {
+                mimeType = ''; // Use default
+              }
+            }
+          }
+          
+          const mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
           mediaRecorderRef.current = mediaRecorder;
           
           mediaRecorder.ondataavailable = (event) => {
@@ -168,7 +178,7 @@ export default function LiveVoiceChat() {
           
           mediaRecorder.onstop = () => {
             if (audioChunksRef.current.length > 0) {
-              const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+              const audioBlob = new Blob(audioChunksRef.current, { type: mimeType || 'audio/wav' });
               sendAudioToServer(audioBlob);
               audioChunksRef.current = [];
             }
@@ -215,17 +225,31 @@ export default function LiveVoiceChat() {
   const startRecording = () => {
     if (!mediaRecorderRef.current || !isConnected || isProcessing) return;
     
-    audioChunksRef.current = [];
-    mediaRecorderRef.current.start(1000); // Record in 1-second chunks
-    setIsRecording(true);
+    try {
+      audioChunksRef.current = [];
+      mediaRecorderRef.current.start(1000); // Record in 1-second chunks
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      toast({
+        title: "Recording failed",
+        description: "Could not start recording. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Stop recording
   const stopRecording = () => {
     if (!mediaRecorderRef.current || !isRecording) return;
     
-    mediaRecorderRef.current.stop();
-    setIsRecording(false);
+    try {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    } catch (error) {
+      console.error('Error stopping recording:', error);
+      setIsRecording(false);
+    }
   };
 
   // Play audio response

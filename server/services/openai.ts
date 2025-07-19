@@ -1,4 +1,7 @@
 import OpenAI from "openai";
+import fs from "fs";
+import path from "path";
+import { Readable } from "stream";
 
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_KEY || ""
@@ -97,9 +100,12 @@ Respond with JSON in this exact format:
   // Live voice chat processing
   async processVoiceInput(audioData: Buffer): Promise<{ text: string; response: string; audioUrl: string }> {
     try {
+      // Create file-like object for OpenAI
+      const audioFile = this.createAudioFile(audioData, "audio.wav");
+      
       // First, transcribe the audio input using OpenAI Whisper
       const transcription = await openai.audio.transcriptions.create({
-        file: new File([audioData], "audio.wav", { type: "audio/wav" }),
+        file: audioFile,
         model: "whisper-1",
       });
 
@@ -126,8 +132,10 @@ Respond with JSON in this exact format:
   // Transcribe audio for real-time chat
   async transcribeAudio(audioData: Buffer): Promise<{ text: string }> {
     try {
+      const audioFile = this.createAudioFile(audioData, "audio.wav");
+      
       const transcription = await openai.audio.transcriptions.create({
-        file: new File([audioData], "audio.wav", { type: "audio/wav" }),
+        file: audioFile,
         model: "whisper-1",
       });
 
@@ -137,6 +145,43 @@ Respond with JSON in this exact format:
     } catch (error) {
       console.error("Audio transcription error:", error);
       throw new Error(`Failed to transcribe audio: ${error}`);
+    }
+  }
+
+  // Helper method to create File-like object for Node.js
+  private createAudioFile(audioData: Buffer, filename: string): any {
+    try {
+      // Create a temporary file path
+      const tempDir = path.join(process.cwd(), 'temp');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      const tempFilePath = path.join(tempDir, `${Date.now()}_${filename}`);
+      fs.writeFileSync(tempFilePath, audioData);
+      
+      // Create a readable stream for the file
+      const fileStream = fs.createReadStream(tempFilePath);
+      
+      // Add cleanup after stream ends
+      fileStream.on('end', () => {
+        setTimeout(() => {
+          try {
+            fs.unlinkSync(tempFilePath);
+          } catch (err) {
+            console.log('Error cleaning up temp file:', err);
+          }
+        }, 1000);
+      });
+      
+      return fileStream;
+    } catch (error) {
+      console.error('Error creating audio file:', error);
+      // Fallback: create a stream directly from buffer
+      const stream = new Readable();
+      stream.push(audioData);
+      stream.push(null);
+      return stream;
     }
   }
 
