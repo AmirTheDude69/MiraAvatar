@@ -764,14 +764,17 @@ ${analysis.feedback}`;
                       className={`flex items-start gap-3 ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                     >
                       {/* Avatar */}
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                      <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
                         message.type === 'user' 
-                          ? 'bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg' 
+                          ? 'shadow-lg' 
                           : 'bg-gradient-to-br from-gray-700 to-gray-800 border border-primary/30 shadow-lg'
-                      }`}>
+                      }`}
+                      style={message.type === 'user' ? {
+                        background: 'linear-gradient(135deg, #2e8b57 0%, #40e0d0 100%)'
+                      } : undefined}>
                         {message.type === 'user' ? 
-                          <User className="w-4 h-4 text-white" /> : 
-                          <Bot className="w-4 h-4 text-primary" />
+                          <User className="w-6 h-6 text-white" /> : 
+                          <Bot className="w-6 h-6 text-primary" />
                         }
                       </div>
 
