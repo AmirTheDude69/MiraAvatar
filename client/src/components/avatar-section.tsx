@@ -98,16 +98,16 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
   return (
     <div className="space-y-6">
       {/* Avatar Display Card */}
-      <Card className="glass-card shadow-xl border-border/20 min-h-96">
+      <Card className="hyperdash-card shadow-2xl border-border/20 min-h-96 hyperdash-glow">
         <CardContent className="p-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold text-foreground mb-2">Your AI Career Coach</h3>
+            <h3 className="text-xl font-semibold text-foreground mb-2 hyperdash-gradient-text">AI Career Coach</h3>
             <p className="text-muted-foreground">
               {isCompleted 
-                ? "Ready to provide personalized feedback" 
+                ? "Analysis complete - Ready for voice feedback" 
                 : isProcessing 
-                  ? "Analyzing your CV..." 
-                  : "Waiting for your CV to provide personalized feedback"
+                  ? "Processing your career data..." 
+                  : "Upload your CV for advanced AI analysis"
               }
             </p>
           </div>
@@ -115,13 +115,13 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
           {/* Avatar Container */}
           <div className="flex items-center justify-center mb-6">
             <div className="relative">
-              <div className={`w-32 h-32 grok-gradient rounded-full flex items-center justify-center avatar-glow ${
-                isSpeaking ? 'animate-pulse' : ''
+              <div className={`w-32 h-32 hyperdash-gradient rounded-full flex items-center justify-center avatar-glow ${
+                isSpeaking ? 'animate-pulse pulse-ring' : ''
               }`}>
-                <User className="text-white w-12 h-12" />
+                <User className="text-black w-12 h-12" />
               </div>
               {isSpeaking && (
-                <div className="absolute -inset-4 border-2 border-primary rounded-full pulse-ring"></div>
+                <div className="absolute -inset-4 border-2 border-primary rounded-full pulse-ring hyperdash-glow"></div>
               )}
             </div>
           </div>
@@ -137,15 +137,15 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
             )}
             
             {isProcessing && (
-              <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
+              <div className="glass-panel rounded-lg p-4 border border-primary/20 hyperdash-glow">
                 <div className="flex items-center justify-center space-x-3 mb-3">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                  <p className="text-primary font-medium">Analyzing your CV...</p>
+                  <p className="text-primary font-medium text-glow">Processing Analysis...</p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground">Extracting text</span>
-                    <span className="text-green-400">✓</span>
+                    <span className="text-primary">✓</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-foreground">AI analysis</span>

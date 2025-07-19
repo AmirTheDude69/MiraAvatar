@@ -71,19 +71,19 @@ export default function UploadSection({ onFileUpload, isUploading }: UploadSecti
   return (
     <div className="space-y-6">
       {/* Upload Card */}
-      <Card className="glass-card shadow-xl border-border/20">
+      <Card className="hyperdash-card shadow-2xl border-border/20 hyperdash-glow">
         <CardContent className="p-6">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-foreground mb-2">Upload Your CV</h2>
-            <p className="text-muted-foreground mb-6">Get personalized feedback from our AI career coach</p>
+            <h2 className="text-2xl font-semibold text-foreground mb-2 hyperdash-gradient-text">Upload CV</h2>
+            <p className="text-muted-foreground mb-6">Advanced AI career analysis with voice feedback</p>
           </div>
           
           {/* File Upload Area */}
           <div
-            className={`upload-area border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 ${
+            className={`upload-area border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 interactive-element ${
               dragActive
-                ? 'border-primary/50 bg-primary/10'
-                : 'border-border/30 hover:border-primary/30'
+                ? 'border-primary/50 bg-primary/20 hyperdash-glow'
+                : 'border-border/30 hover:border-primary/50'
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -92,15 +92,15 @@ export default function UploadSection({ onFileUpload, isUploading }: UploadSecti
             onClick={handleClick}
           >
             <div className="space-y-4">
-              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                <FileText className="text-primary w-8 h-8" />
+              <div className="mx-auto w-16 h-16 hyperdash-gradient rounded-full flex items-center justify-center hyperdash-glow">
+                <FileText className="text-black w-8 h-8" />
               </div>
               <div>
-                <p className="text-lg font-medium text-foreground">Drop your CV here</p>
+                <p className="text-lg font-medium text-foreground text-glow">Drop your CV here</p>
                 <p className="text-muted-foreground">or click to browse files</p>
               </div>
               <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
-                <CheckCircle className="text-green-400 w-4 h-4" />
+                <CheckCircle className="text-primary w-4 h-4" />
                 <span>PDF files only • Max 10MB</span>
               </div>
             </div>
