@@ -71,19 +71,19 @@ export default function UploadSection({ onFileUpload, isUploading }: UploadSecti
   return (
     <div className="space-y-6">
       {/* Upload Card */}
-      <Card className="shadow-sm border border-gray-200">
+      <Card className="glass-card shadow-xl border-border/20">
         <CardContent className="p-6">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Upload Your CV</h2>
-            <p className="text-gray-500 mb-6">Get personalized feedback from our AI career coach</p>
+            <h2 className="text-2xl font-semibold text-foreground mb-2">Upload Your CV</h2>
+            <p className="text-muted-foreground mb-6">Get personalized feedback from our AI career coach</p>
           </div>
           
           {/* File Upload Area */}
           <div
-            className={`upload-area border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
+            className={`upload-area border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 ${
               dragActive
-                ? 'border-blue-500 bg-blue-50'
-                : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+                ? 'border-primary/50 bg-primary/10'
+                : 'border-border/30 hover:border-primary/30'
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -92,15 +92,15 @@ export default function UploadSection({ onFileUpload, isUploading }: UploadSecti
             onClick={handleClick}
           >
             <div className="space-y-4">
-              <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                <FileText className="text-blue-500 w-8 h-8" />
+              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                <FileText className="text-primary w-8 h-8" />
               </div>
               <div>
-                <p className="text-lg font-medium text-gray-900">Drop your CV here</p>
-                <p className="text-gray-500">or click to browse files</p>
+                <p className="text-lg font-medium text-foreground">Drop your CV here</p>
+                <p className="text-muted-foreground">or click to browse files</p>
               </div>
-              <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
-                <CheckCircle className="text-green-500 w-4 h-4" />
+              <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
+                <CheckCircle className="text-green-400 w-4 h-4" />
                 <span>PDF files only • Max 10MB</span>
               </div>
             </div>
@@ -115,7 +115,7 @@ export default function UploadSection({ onFileUpload, isUploading }: UploadSecti
 
           {/* Upload Button */}
           <Button 
-            className="w-full mt-6 bg-blue-500 hover:bg-blue-700" 
+            className="w-full mt-6 grok-gradient text-white hover:opacity-90 transition-opacity" 
             disabled={isUploading}
             onClick={handleClick}
           >
@@ -126,29 +126,29 @@ export default function UploadSection({ onFileUpload, isUploading }: UploadSecti
       </Card>
 
       {/* Features Card */}
-      <Card className="shadow-sm border border-gray-200">
+      <Card className="glass-card shadow-xl border-border/20">
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">What You'll Get</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">What You'll Get</h3>
           <div className="space-y-3">
             <div className="flex items-start space-x-3">
-              <Brain className="text-blue-500 mt-1 w-5 h-5" />
+              <Brain className="text-primary mt-1 w-5 h-5" />
               <div>
-                <p className="font-medium text-gray-900">AI-Powered Analysis</p>
-                <p className="text-sm text-gray-500">Deep analysis of your skills, experience, and achievements</p>
+                <p className="font-medium text-foreground">AI-Powered Analysis</p>
+                <p className="text-sm text-muted-foreground">Deep analysis of your skills, experience, and achievements</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
-              <Mic className="text-green-500 mt-1 w-5 h-5" />
+              <Mic className="text-green-400 mt-1 w-5 h-5" />
               <div>
-                <p className="font-medium text-gray-900">Voice Feedback</p>
-                <p className="text-sm text-gray-500">Natural speech with personalized recommendations</p>
+                <p className="font-medium text-foreground">Voice Feedback</p>
+                <p className="text-sm text-muted-foreground">Natural speech with personalized recommendations</p>
               </div>
             </div>
             <div className="flex items-start space-x-3">
-              <TrendingUp className="text-purple-500 mt-1 w-5 h-5" />
+              <TrendingUp className="text-purple-400 mt-1 w-5 h-5" />
               <div>
-                <p className="font-medium text-gray-900">Actionable Insights</p>
-                <p className="text-sm text-gray-500">Specific suggestions to improve your CV</p>
+                <p className="font-medium text-foreground">Actionable Insights</p>
+                <p className="text-sm text-muted-foreground">Specific suggestions to improve your CV</p>
               </div>
             </div>
           </div>

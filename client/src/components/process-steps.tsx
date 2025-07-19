@@ -44,25 +44,25 @@ export default function ProcessSteps({ currentStep }: ProcessStepsProps) {
               <div className="flex flex-col items-center">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 relative ${
                   isCompleted 
-                    ? 'bg-green-500 text-white'
+                    ? 'bg-green-400 text-white'
                     : step.active 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-gray-200 text-gray-400'
+                      ? 'grok-gradient text-white' 
+                      : 'bg-muted text-muted-foreground'
                 }`}>
                   {isCompleted ? <CheckCircle className="w-6 h-6" /> : <Icon className="w-6 h-6" />}
                   {step.active && (
-                    <div className="absolute -inset-1 bg-blue-500 rounded-full pulse-ring opacity-20"></div>
+                    <div className="absolute -inset-1 bg-primary rounded-full pulse-ring opacity-30"></div>
                   )}
                 </div>
                 <span className={`text-sm font-medium ${
-                  step.active || isCompleted ? 'text-gray-900' : 'text-gray-500'
+                  step.active || isCompleted ? 'text-foreground' : 'text-muted-foreground'
                 }`}>
                   {step.title}
                 </span>
-                <span className="text-xs text-gray-400">{step.subtitle}</span>
+                <span className="text-xs text-muted-foreground/70">{step.subtitle}</span>
               </div>
               {index < steps.length - 1 && (
-                <div className="w-16 h-px bg-gray-300 mx-4"></div>
+                <div className="w-16 h-px bg-border/50 mx-4"></div>
               )}
             </div>
           );

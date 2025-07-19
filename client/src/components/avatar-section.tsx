@@ -98,11 +98,11 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
   return (
     <div className="space-y-6">
       {/* Avatar Display Card */}
-      <Card className="shadow-sm border border-gray-200 min-h-96">
+      <Card className="glass-card shadow-xl border-border/20 min-h-96">
         <CardContent className="p-6">
           <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Your AI Career Coach</h3>
-            <p className="text-gray-500">
+            <h3 className="text-xl font-semibold text-foreground mb-2">Your AI Career Coach</h3>
+            <p className="text-muted-foreground">
               {isCompleted 
                 ? "Ready to provide personalized feedback" 
                 : isProcessing 
@@ -115,13 +115,13 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
           {/* Avatar Container */}
           <div className="flex items-center justify-center mb-6">
             <div className="relative">
-              <div className={`w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center avatar-glow ${
+              <div className={`w-32 h-32 grok-gradient rounded-full flex items-center justify-center avatar-glow ${
                 isSpeaking ? 'animate-pulse' : ''
               }`}>
-                <User className="text-blue-500 w-12 h-12" />
+                <User className="text-white w-12 h-12" />
               </div>
               {isSpeaking && (
-                <div className="absolute -inset-4 border-2 border-blue-500 rounded-full pulse-ring"></div>
+                <div className="absolute -inset-4 border-2 border-primary rounded-full pulse-ring"></div>
               )}
             </div>
           </div>
@@ -129,29 +129,29 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
           {/* Status Display */}
           <div className="text-center space-y-4">
             {!isProcessing && !isCompleted && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <Clock className="text-gray-500 w-8 h-8 mb-2 mx-auto" />
-                <p className="text-gray-500 font-medium">Ready to analyze your CV</p>
-                <p className="text-sm text-gray-400 mt-1">Upload your PDF to get started</p>
+              <div className="bg-card/50 rounded-lg p-4 border border-border/30">
+                <Clock className="text-muted-foreground w-8 h-8 mb-2 mx-auto" />
+                <p className="text-muted-foreground font-medium">Ready to analyze your CV</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Upload your PDF to get started</p>
               </div>
             )}
             
             {isProcessing && (
-              <div className="bg-blue-50 rounded-lg p-4">
+              <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
                 <div className="flex items-center justify-center space-x-3 mb-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                  <p className="text-blue-500 font-medium">Analyzing your CV...</p>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  <p className="text-primary font-medium">Analyzing your CV...</p>
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span>Extracting text</span>
-                    <span className="text-green-500">✓</span>
+                    <span className="text-foreground">Extracting text</span>
+                    <span className="text-green-400">✓</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>AI analysis</span>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    <span className="text-foreground">AI analysis</span>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                   </div>
-                  <div className="flex justify-between text-sm text-gray-400">
+                  <div className="flex justify-between text-sm text-muted-foreground">
                     <span>Generating voice</span>
                     <span>...</span>
                   </div>
@@ -160,9 +160,9 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
             )}
 
             {isCompleted && (
-              <div className="bg-green-50 rounded-lg p-4">
-                <Volume2 className="text-green-500 w-8 h-8 mb-2 mx-auto" />
-                <p className="text-green-500 font-medium">
+              <div className="bg-green-400/10 rounded-lg p-4 border border-green-400/20">
+                <Volume2 className="text-green-400 w-8 h-8 mb-2 mx-auto" />
+                <p className="text-green-400 font-medium">
                   {isSpeaking ? 'Providing feedback...' : 'Ready to provide feedback'}
                 </p>
               </div>
@@ -172,20 +172,20 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
       </Card>
 
       {/* Audio Controls Card */}
-      <Card className="shadow-sm border border-gray-200">
+      <Card className="glass-card shadow-xl border-border/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h4 className="text-lg font-semibold text-gray-900">Audio Controls</h4>
-            <div className="text-sm text-gray-500">
+            <h4 className="text-lg font-semibold text-foreground">Audio Controls</h4>
+            <div className="text-sm text-muted-foreground">
               {formatTime(duration)}
             </div>
           </div>
           
           {/* Audio Progress Bar */}
           <div className="relative mb-4">
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-muted rounded-full h-2">
               <div 
-                className="bg-blue-500 h-2 rounded-full transition-all duration-300" 
+                className="grok-gradient h-2 rounded-full transition-all duration-300" 
                 style={{ width: `${progressPercentage}%` }}
               ></div>
             </div>
@@ -196,7 +196,7 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
             <Button
               variant="outline"
               size="sm"
-              className="w-12 h-12 rounded-full"
+              className="w-12 h-12 rounded-full border-border/30 hover:border-primary/30"
               disabled={!isCompleted}
               onClick={rewind}
             >
@@ -204,7 +204,7 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
             </Button>
             <Button
               size="lg"
-              className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-700"
+              className="w-16 h-16 rounded-full grok-gradient text-white hover:opacity-90"
               disabled={!isCompleted}
               onClick={togglePlayPause}
             >
@@ -213,7 +213,7 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
             <Button
               variant="outline"
               size="sm"
-              className="w-12 h-12 rounded-full"
+              className="w-12 h-12 rounded-full border-border/30 hover:border-primary/30"
               disabled={!isCompleted}
               onClick={forward}
             >
@@ -227,6 +227,7 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
               variant="ghost"
               size="sm"
               onClick={toggleMute}
+              className="grok-hover"
             >
               {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
             </Button>

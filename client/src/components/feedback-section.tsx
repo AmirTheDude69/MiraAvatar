@@ -38,62 +38,62 @@ export default function FeedbackSection({ analysis, onAnalyzeAnother }: Feedback
 
   return (
     <div className="mt-12">
-      <Card className="shadow-sm border border-gray-200">
+      <Card className="glass-card shadow-xl border-border/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-2xl font-semibold text-gray-900">CV Analysis Results</h3>
+            <h3 className="text-2xl font-semibold text-foreground">CV Analysis Results</h3>
             <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-green-500 font-medium">Analysis Complete</span>
+              <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+              <span className="text-sm text-green-400 font-medium">Analysis Complete</span>
             </div>
           </div>
           
           {/* Feedback Content */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Strengths */}
-            <div className="bg-green-50 rounded-lg p-4">
+            <div className="bg-green-400/10 rounded-lg p-4 border border-green-400/20">
               <div className="flex items-center space-x-2 mb-3">
-                <Star className="text-green-500 w-5 h-5" />
-                <h4 className="font-semibold text-gray-900">Strengths</h4>
+                <Star className="text-green-400 w-5 h-5" />
+                <h4 className="font-semibold text-foreground">Strengths</h4>
               </div>
               <ul className="space-y-2 text-sm">
                 {strengths.map((strength, index) => (
                   <li key={index} className="flex items-start space-x-2">
-                    <CheckCircle className="text-green-500 mt-0.5 w-3 h-3 flex-shrink-0" />
-                    <span>{strength}</span>
+                    <CheckCircle className="text-green-400 mt-0.5 w-3 h-3 flex-shrink-0" />
+                    <span className="text-foreground">{strength}</span>
                   </li>
                 ))}
               </ul>
             </div>
             
             {/* Improvements */}
-            <div className="bg-amber-50 rounded-lg p-4">
+            <div className="bg-amber-400/10 rounded-lg p-4 border border-amber-400/20">
               <div className="flex items-center space-x-2 mb-3">
-                <AlertTriangle className="text-amber-500 w-5 h-5" />
-                <h4 className="font-semibold text-gray-900">Areas to Improve</h4>
+                <AlertTriangle className="text-amber-400 w-5 h-5" />
+                <h4 className="font-semibold text-foreground">Areas to Improve</h4>
               </div>
               <ul className="space-y-2 text-sm">
                 {improvements.map((improvement, index) => (
                   <li key={index} className="flex items-start space-x-2">
-                    <div className="text-amber-500 mt-0.5 w-3 h-3 flex-shrink-0">↑</div>
-                    <span>{improvement}</span>
+                    <div className="text-amber-400 mt-0.5 w-3 h-3 flex-shrink-0">↑</div>
+                    <span className="text-foreground">{improvement}</span>
                   </li>
                 ))}
               </ul>
             </div>
             
             {/* Overall Score */}
-            <div className="bg-blue-50 rounded-lg p-4">
+            <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
               <div className="flex items-center space-x-2 mb-3">
-                <PieChart className="text-blue-500 w-5 h-5" />
-                <h4 className="font-semibold text-gray-900">Overall Score</h4>
+                <PieChart className="text-primary w-5 h-5" />
+                <h4 className="font-semibold text-foreground">Overall Score</h4>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-blue-500 mb-1">{score}</div>
-                <div className="text-sm text-gray-500 mb-3">out of 100</div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="text-3xl font-bold text-primary mb-1">{score}</div>
+                <div className="text-sm text-muted-foreground mb-3">out of 100</div>
+                <div className="w-full bg-muted rounded-full h-2">
                   <div 
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-500" 
+                    className="grok-gradient h-2 rounded-full transition-all duration-500" 
                     style={{ width: `${score}%` }}
                   ></div>
                 </div>
@@ -104,7 +104,7 @@ export default function FeedbackSection({ analysis, onAnalyzeAnother }: Feedback
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
             <Button 
-              className="flex-1 bg-blue-500 hover:bg-blue-700" 
+              className="flex-1 grok-gradient text-white hover:opacity-90" 
               onClick={downloadReport}
             >
               <Download className="w-4 h-4 mr-2" />
@@ -112,7 +112,7 @@ export default function FeedbackSection({ analysis, onAnalyzeAnother }: Feedback
             </Button>
             <Button 
               variant="outline" 
-              className="flex-1 border-blue-500 text-blue-500 hover:bg-blue-50" 
+              className="flex-1 border-primary/30 text-primary hover:bg-primary/10" 
               onClick={onAnalyzeAnother}
             >
               <Plus className="w-4 h-4 mr-2" />
