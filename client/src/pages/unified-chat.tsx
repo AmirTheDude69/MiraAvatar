@@ -780,7 +780,7 @@ ${analysis.feedback}`;
                         <div
                           className={`message-bubble titillium-web-regular inline-block p-4 rounded-2xl shadow-xl backdrop-blur-xl border transition-all duration-300 hover:shadow-2xl max-h-[60vh] overflow-y-auto ${
                             message.type === 'user'
-                              ? 'bg-gradient-to-br from-blue-600/70 to-indigo-600/70 text-white border-blue-400/20 rounded-br-md'
+                              ? 'bg-gradient-to-br from-green-600/70 to-emerald-600/70 text-white border-green-400/20 rounded-br-md'
                               : 'bg-gradient-to-br from-gray-800/95 to-gray-900/95 border-gray-600/20 text-white rounded-bl-md'
                           }`}
                         >
