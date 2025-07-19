@@ -53,15 +53,16 @@ export default function Home() {
     queryKey: ['/api/cv/analysis', analysisId],
     enabled: !!analysisId,
     refetchInterval: (data, query) => {
-      console.log('Polling analysis:', analysisId, 'Status:', data?.status, 'Data:', data);
+      console.log('Polling analysis:', analysisId, 'Status:', data?.status, 'Data:', query);
       // Continue polling if still processing or if we don't have data yet
       if (!data || data.status === 'processing') {
-        return 2000; // Poll every 2 seconds
+        return 3000; // Poll every 3 seconds
       }
       return false; // Stop polling when completed
     },
     refetchIntervalInBackground: true,
     refetchOnWindowFocus: true,
+    staleTime: 0, // Override default to always fetch fresh data
     retry: (failureCount, error) => {
       console.log('Query retry attempt:', failureCount, error);
       return failureCount < 3;
@@ -75,6 +76,13 @@ export default function Home() {
   const handleAnalyzeAnother = () => {
     setAnalysisId(null);
     queryClient.clear();
+  };
+
+  // Force refresh the current analysis
+  const forceRefresh = () => {
+    if (analysisId) {
+      queryClient.invalidateQueries({ queryKey: ['/api/cv/analysis', analysisId] });
+    }
   };
 
   // Debug function to manually load the completed analysis
