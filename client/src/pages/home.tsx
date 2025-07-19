@@ -7,7 +7,7 @@ import UploadSection from "@/components/upload-section";
 import AvatarSection from "@/components/avatar-section";
 import FeedbackSection from "@/components/feedback-section";
 import { Button } from "@/components/ui/button";
-import { HelpCircle, User, Github, Twitter, Linkedin, MessageCircle } from "lucide-react";
+import { HelpCircle, User, Github, Twitter, Linkedin, MessageCircle, Mic } from "lucide-react";
 import { Link } from "wouter";
 import type { CvAnalysis } from "@shared/schema";
 
@@ -132,6 +132,12 @@ export default function Home() {
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground transition-colors">
                   <MessageCircle className="w-4 h-4 mr-2" />
                   AI Chat
+                </Button>
+              </Link>
+              <Link href="/live-voice">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Mic className="w-4 h-4 mr-2" />
+                  Live Voice
                 </Button>
               </Link>
               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground transition-colors">

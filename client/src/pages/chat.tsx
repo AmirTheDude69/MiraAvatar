@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Link } from "wouter";
-import { Mic, MicOff, Send, Volume2, VolumeX, User, Bot, Loader2, Home } from "lucide-react";
+import { Mic, MicOff, Send, Volume2, VolumeX, User, Bot, Loader2, Home, Radio } from "lucide-react";
 import type { ChatMessage } from "@shared/schema";
 
 interface ChatResponse {
@@ -191,11 +191,17 @@ export default function Chat() {
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center justify-center mb-4 space-x-4">
             <Link href="/">
-              <Button variant="ghost" size="sm" className="mr-4">
+              <Button variant="ghost" size="sm">
                 <Home className="w-4 h-4 mr-2" />
-                Back to CV Analysis
+                Home
+              </Button>
+            </Link>
+            <Link href="/live-voice">
+              <Button variant="ghost" size="sm">
+                <Radio className="w-4 h-4 mr-2" />
+                Live Voice Chat
               </Button>
             </Link>
           </div>

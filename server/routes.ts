@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import multer from "multer";
 import { storage } from "./storage";
 import { pdfParser } from "./services/pdf-parser";
@@ -263,5 +264,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   const httpServer = createServer(app);
+
+  // WebSocket Server for real-time voice chat
+  const wss = new WebSocketServer({ 
+    server: httpServer, 
+    path: '/ws'
+  });
+
+  // Voice chat session storage
+  const voiceSessions = new Map<string, {
+    ws: WebSocket;
+    sessionId: string;
+    isProcessing: boolean;
+    conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>;
+  }>();
+
+  wss.on('connection', (ws: WebSocket, req) => {
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log(`Voice chat session started: ${sessionId}`);
+    
+    // Initialize session
+    voiceSessions.set(sessionId, {
+      ws,
+      sessionId,
+      isProcessing: false,
+      conversationHistory: []
+    });
+
+    // Send initial session info
+    ws.send(JSON.stringify({
+      type: 'session_started',
+      sessionId,
+      message: 'Voice chat session established. Start speaking!'
+    }));
+
+    ws.on('message', async (data) => {
+      try {
+        const session = voiceSessions.get(sessionId);
+        if (!session || session.isProcessing) {
+          return;
+        }
+
+        const message = JSON.parse(data.toString());
+        
+        if (message.type === 'voice_data') {
+          // Mark as processing
+          session.isProcessing = true;
+          
+          ws.send(JSON.stringify({
+            type: 'processing',
+            message: 'Processing your voice input...'
+          }));
+
+          // Convert base64 audio to buffer
+          const audioBuffer = Buffer.from(message.audioData, 'base64');
+          
+          // Process voice input with conversation context
+          const result = await processVoiceWithContext(audioBuffer, session.conversationHistory);
+          
+          // Update conversation history
+          session.conversationHistory.push(
+            { role: 'user', content: result.text },
+            { role: 'assistant', content: result.response }
+          );
+
+          // Keep conversation history manageable (last 10 exchanges)
+          if (session.conversationHistory.length > 20) {
+            session.conversationHistory = session.conversationHistory.slice(-20);
+          }
+
+          // Save to database
+          await storage.createChatMessage({
+            message: result.text,
+            response: result.response,
+            type: "voice"
+          });
+
+          // Send response
+          ws.send(JSON.stringify({
+            type: 'voice_response',
+            userText: result.text,
+            response: result.response,
+            audioUrl: result.audioUrl,
+            sessionId
+          }));
+
+          session.isProcessing = false;
+        }
+        
+        if (message.type === 'ping') {
+          ws.send(JSON.stringify({ type: 'pong' }));
+        }
+
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+        const session = voiceSessions.get(sessionId);
+        if (session) {
+          session.isProcessing = false;
+        }
+        
+        ws.send(JSON.stringify({
+          type: 'error',
+          message: 'Failed to process voice input'
+        }));
+      }
+    });
+
+    ws.on('close', () => {
+      console.log(`Voice chat session ended: ${sessionId}`);
+      voiceSessions.delete(sessionId);
+    });
+
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+      voiceSessions.delete(sessionId);
+    });
+  });
+
+  // Enhanced voice processing with conversation context
+  async function processVoiceWithContext(
+    audioData: Buffer, 
+    conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>
+  ): Promise<{ text: string; response: string; audioUrl: string }> {
+    try {
+      // Transcribe audio using OpenAI Whisper
+      const transcription = await openaiService.transcribeAudio(audioData);
+      const userText = transcription.text;
+      
+      // Generate contextual AI response
+      const aiResponse = await openaiService.chatWithContext(userText, conversationHistory);
+      
+      // Generate voice response
+      const audioUrl = await elevenLabsService.generateSpeech(aiResponse);
+      
+      return {
+        text: userText,
+        response: aiResponse,
+        audioUrl
+      };
+    } catch (error) {
+      console.error('Voice processing error:', error);
+      throw error;
+    }
+  }
+
   return httpServer;
 }

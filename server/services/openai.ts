@@ -122,6 +122,61 @@ Respond with JSON in this exact format:
       throw new Error(`Failed to process voice input: ${error}`);
     }
   }
+
+  // Transcribe audio for real-time chat
+  async transcribeAudio(audioData: Buffer): Promise<{ text: string }> {
+    try {
+      const transcription = await openai.audio.transcriptions.create({
+        file: new File([audioData], "audio.wav", { type: "audio/wav" }),
+        model: "whisper-1",
+      });
+
+      return {
+        text: transcription.text
+      };
+    } catch (error) {
+      console.error("Audio transcription error:", error);
+      throw new Error(`Failed to transcribe audio: ${error}`);
+    }
+  }
+
+  // Chat with conversation context for real-time conversations
+  async chatWithContext(
+    message: string, 
+    conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>
+  ): Promise<string> {
+    try {
+      // Build messages array with conversation history
+      const messages = [
+        {
+          role: "system" as const,
+          content: "You are a helpful AI career coach and assistant engaged in a live voice conversation. Provide natural, conversational responses that flow well when spoken aloud. Keep responses concise but engaging, as this is real-time voice chat."
+        },
+        // Add conversation history
+        ...conversationHistory.map(msg => ({
+          role: msg.role as "user" | "assistant",
+          content: msg.content
+        })),
+        // Add current message
+        {
+          role: "user" as const,
+          content: message
+        }
+      ];
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages,
+        temperature: 0.8, // Slightly higher for more natural conversation
+        max_tokens: 300, // Shorter responses for real-time chat
+      });
+
+      return response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";
+    } catch (error) {
+      console.error("OpenAI context chat error:", error);
+      throw new Error(`Failed to chat with context: ${error}`);
+    }
+  }
 }
 
 export const openaiService = new OpenAIService();

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Home from "@/pages/home";
 import Chat from "@/pages/chat";
+import LiveVoiceChat from "@/pages/live-voice-chat";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -12,6 +13,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/chat" component={Chat} />
+      <Route path="/live-voice" component={LiveVoiceChat} />
       <Route component={NotFound} />
     </Switch>
   );
