@@ -690,55 +690,73 @@ ${analysis.feedback}`;
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Background effects */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-primary/20 blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-green-500/20 blur-3xl" />
+      {/* Cyberpunk Background effects */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-cyan-500/30 to-blue-500/30 blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-purple-500/30 to-pink-500/30 blur-3xl animate-pulse" />
+        <div className="absolute top-1/2 left-1/2 w-72 h-72 rounded-full bg-gradient-to-r from-green-400/20 to-cyan-400/20 blur-2xl" />
+      </div>
+      
+      {/* Animated grid lines */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute w-full h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent top-1/4 animate-pulse" />
+        <div className="absolute w-full h-px bg-gradient-to-r from-transparent via-purple-400 to-transparent top-3/4 animate-pulse" />
+        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-cyan-400 to-transparent left-1/4 animate-pulse" />
+        <div className="absolute w-px h-full bg-gradient-to-b from-transparent via-purple-400 to-transparent right-1/4 animate-pulse" />
       </div>
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6 py-8 h-screen flex flex-col min-h-0">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-8 h-screen flex flex-col min-h-0 cyber-grid">
         {/* Header with interaction modes */}
         <div className="mb-6">
+          <h1 className="text-4xl titillium-web-bold text-center mb-6 neon-text">
+            AI CAREER NEXUS
+          </h1>
           <div className="flex items-center justify-center space-x-4">
             <Button
               onClick={() => setInteractionMode('text')}
               variant={interactionMode === 'text' ? 'default' : 'ghost'}
               size="sm"
-              className={`rounded-full ${interactionMode === 'text' ? 'selected-button-glow' : ''}`}
+              className={`titillium-web-semibold rounded-full cyberpunk-border transition-all duration-300 ${
+                interactionMode === 'text' ? 'cyberpunk-glow holographic-bg' : 'hover:holographic-bg'
+              }`}
             >
               <MessageSquare className="w-4 h-4 mr-2" />
-              Text
+              TEXT
             </Button>
             <Button
               onClick={() => setInteractionMode('click-to-talk')}
               variant={interactionMode === 'click-to-talk' ? 'default' : 'ghost'}
               size="sm"
-              className={`rounded-full ${interactionMode === 'click-to-talk' ? 'selected-button-glow' : ''}`}
+              className={`titillium-web-semibold rounded-full cyberpunk-border transition-all duration-300 ${
+                interactionMode === 'click-to-talk' ? 'cyberpunk-glow holographic-bg' : 'hover:holographic-bg'
+              }`}
             >
               <Mic className="w-4 h-4 mr-2" />
-              Click to Talk
+              VOICE
             </Button>
             <Button
               onClick={() => setInteractionMode('continuous')}
               variant={interactionMode === 'continuous' ? 'default' : 'ghost'}
               size="sm"
-              className={`rounded-full ${interactionMode === 'continuous' ? 'selected-button-glow' : ''}`}
+              className={`titillium-web-semibold rounded-full cyberpunk-border transition-all duration-300 ${
+                interactionMode === 'continuous' ? 'cyberpunk-glow holographic-bg' : 'hover:holographic-bg'
+              }`}
             >
               <Radio className="w-4 h-4 mr-2" />
-              Continuous Chat
+              NEURAL LINK
             </Button>
           </div>
         </div>
 
         {/* Chat Area */}
-        <Card className="flex-1 glass-enhanced border border-border/30 mb-6 overflow-hidden">
+        <Card className="flex-1 glass-enhanced cyberpunk-border mb-6 overflow-hidden matrix-rain">
           <CardContent className="p-0 h-full flex flex-col">
             <ScrollArea className="flex-1 p-6 scroll-container scrollbar-thin max-h-[70vh] overflow-y-auto">
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
                     <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>Start a conversation or upload your CV for analysis</p>
+                    <p className="titillium-web-light">Initialize Neural Connection or Upload Data Package</p>
                   </div>
                 </div>
               ) : (
@@ -763,10 +781,10 @@ ${analysis.feedback}`;
                       {/* Message bubble */}
                       <div className={`flex-1 max-w-[75%] min-w-0 ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
                         <div
-                          className={`message-bubble inline-block p-4 rounded-2xl shadow-xl backdrop-blur-xl border transition-all duration-300 hover:shadow-2xl max-h-[60vh] overflow-y-auto ${
+                          className={`message-bubble titillium-web-regular inline-block p-4 rounded-2xl shadow-xl backdrop-blur-xl border transition-all duration-300 hover:shadow-2xl max-h-[60vh] overflow-y-auto ${
                             message.type === 'user'
-                              ? 'bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 text-white border-blue-400/20 rounded-br-md'
-                              : 'bg-gradient-to-br from-gray-800/95 to-gray-900/95 border-white/10 text-white rounded-bl-md'
+                              ? 'bg-gradient-to-br from-cyan-600/80 via-blue-600/80 to-purple-600/80 text-white border-cyan-400/30 rounded-br-md cyberpunk-glow'
+                              : 'bg-gradient-to-br from-gray-800/95 to-gray-900/95 border-cyan-400/20 text-white rounded-bl-md'
                           }`}
                         >
                           <div className="prose prose-sm prose-invert max-w-none break-words overflow-hidden">
@@ -790,10 +808,10 @@ ${analysis.feedback}`;
                                 onClick={() => playAudio(message.audioUrl!)}
                                 variant="ghost"
                                 size="sm"
-                                className="bg-white/10 hover:bg-white/20 text-white h-7 px-3 rounded-lg transition-all duration-200 hover:scale-105 text-xs"
+                                className="titillium-web-semibold bg-cyan-500/20 hover:bg-cyan-400/30 text-cyan-300 border border-cyan-400/30 h-7 px-3 rounded-lg transition-all duration-200 hover:scale-105 text-xs cyberpunk-glow"
                               >
                                 <Volume2 className="w-3 h-3 mr-1" />
-                                Play
+                                PLAY AUDIO
                               </Button>
                             </div>
                           )}
@@ -834,12 +852,12 @@ ${analysis.feedback}`;
                   : { onClick: toggleContinuousMode }
                 )}
                 disabled={isProcessing || !isConnected}
-                className={`w-16 h-16 rounded-full border-4 transition-all duration-200 ${
+                className={`titillium-web-bold w-16 h-16 rounded-full border-4 transition-all duration-200 ${
                   isContinuousMode
-                    ? 'bg-green-500 border-green-300 scale-110 shadow-green-500/50 shadow-2xl animate-pulse'
+                    ? 'bg-cyan-500 border-cyan-300 scale-110 shadow-cyan-500/50 shadow-2xl animate-pulse cyberpunk-glow'
                     : isRecording 
-                    ? 'bg-red-500 border-red-300 scale-110 shadow-red-500/50 shadow-2xl' 
-                    : 'hyperdash-gradient border-primary/30 hover:scale-105 shadow-primary/50 shadow-xl'
+                    ? 'bg-red-500 border-red-300 scale-110 shadow-red-500/50 shadow-2xl cyberpunk-glow' 
+                    : 'holographic-bg cyberpunk-border hover:scale-105 shadow-cyan-500/50 shadow-xl hover:cyberpunk-glow'
                 }`}
               >
                 {isProcessing ? (
@@ -849,7 +867,7 @@ ${analysis.feedback}`;
                 ) : isRecording ? (
                   <MicOff className="w-6 h-6 text-white" />
                 ) : (
-                  <Mic className="w-6 h-6 text-black" />
+                  <Mic className="w-6 h-6 text-cyan-300" />
                 )}
               </Button>
             </div>
@@ -862,14 +880,14 @@ ${analysis.feedback}`;
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && sendTextMessage()}
-                placeholder="Type your message..."
-                className="flex-1 glass-enhanced border-border/30"
+                placeholder="Enter neural data transmission..."
+                className="titillium-web-regular flex-1 glass-enhanced border-cyan-400/30 text-cyan-100 placeholder:text-cyan-400/60"
                 disabled={isProcessing}
               />
               <Button
                 onClick={sendTextMessage}
                 disabled={!inputText.trim() || isProcessing}
-                className="hyperdash-gradient"
+                className="titillium-web-semibold cyberpunk-border holographic-bg hover:cyberpunk-glow transition-all duration-300 text-cyan-300"
               >
                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
@@ -881,11 +899,11 @@ ${analysis.feedback}`;
             <Button
               onClick={() => fileInputRef.current?.click()}
               variant="outline"
-              className="glass-enhanced border-primary/30 hover:bg-primary/20"
+              className="titillium-web-bold cyberpunk-border holographic-bg hover:cyberpunk-glow transition-all duration-300 text-cyan-300"
               disabled={isProcessing}
             >
               <Upload className="w-4 h-4 mr-2" />
-              Upload CV
+              UPLOAD DATA PACKAGE
             </Button>
             <input
               ref={fileInputRef}
