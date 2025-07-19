@@ -247,20 +247,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Processing CV with ${analysis.extractedText.length} characters`);
 
-      // Run OpenAI analysis and speech generation in parallel for speed
-      console.log("Starting parallel processing: OpenAI analysis + speech generation...");
+      // Optimize processing: just do OpenAI analysis first, then speech
+      console.log("Starting optimized CV analysis...");
       
-      const [aiAnalysis, audioUrl] = await Promise.all([
-        openaiService.analyzeCv(analysis.extractedText),
-        // Generate speech from a short preview while analysis runs
-        elevenLabsService.generateSpeech("Your CV analysis is ready. Here's your personalized feedback.")
-      ]);
-      
+      const aiAnalysis = await openaiService.analyzeCv(analysis.extractedText);
       console.log("OpenAI analysis completed:", aiAnalysis);
-      console.log(`Speech generated: ${audioUrl}`);
       
-      // Generate actual speech with the feedback
+      // Generate speech with the feedback (faster single step)
       const finalAudioUrl = await elevenLabsService.generateSpeech(aiAnalysis.feedback);
+      console.log(`Speech generated: ${finalAudioUrl}`);
       
       // Update analysis with results
       console.log("Updating analysis with results...");

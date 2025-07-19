@@ -21,7 +21,7 @@ export class OpenAIService {
       const optimizedText = extractedText.length > 2000 ? extractedText.substring(0, 2000) + "..." : extractedText;
       
       const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini", // Faster model for quicker responses
+        model: "gpt-4o-mini", // Optimized for speed
         messages: [
           {
             role: "system",
@@ -39,8 +39,8 @@ export class OpenAIService {
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.3, // Lower for faster, more focused responses
-        max_tokens: 500 // Reduced for speed
+        temperature: 0.2, // Optimized for speed and consistency
+        max_tokens: 400 // Reduced for faster processing
       });
 
       const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -208,8 +208,8 @@ export class OpenAIService {
       const response = await openai.chat.completions.create({
         model: "gpt-4o-mini", // Faster model for real-time conversation
         messages,
-        temperature: 0.6, // Optimized for speed and quality
-        max_tokens: 200, // Shorter for real-time chat
+        temperature: 0.5, // Balanced for speed and quality
+        max_tokens: 150, // Shorter for faster responses
       });
 
       return response.choices[0].message.content || "I'm sorry, I couldn't generate a response.";

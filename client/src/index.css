@@ -143,6 +143,43 @@
 
   .interactive-hover:hover {
     transform: translateY(-2px);
+  }
+
+  /* Enhanced scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Performance optimizations */
+  .scroll-container {
+    transform: translateZ(0);
+    will-change: scroll-position;
+  }
+
+  /* Smooth animations */
+  .message-bubble {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
     box-shadow: 
       0 20px 40px rgba(0, 0, 0, 0.2),
       0 0 20px rgba(16, 185, 129, 0.1);

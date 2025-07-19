@@ -637,7 +637,7 @@ ${analysis.feedback}`;
   };
 
   const pollForAnalysis = async (analysisId: number) => {
-    const maxAttempts = 30; // 30 seconds max
+    const maxAttempts = 25; // Reduced timeout for faster UX
     let attempts = 0;
 
     const poll = async () => {
@@ -665,8 +665,8 @@ ${analysis.feedback}`;
           }
 
           toast({
-            title: "CV Analysis Complete",
-            description: "Your CV has been analyzed successfully.",
+            title: "Analysis Complete",
+            description: "CV analyzed successfully",
           });
           setIsProcessing(false);
         } else if (data.status === 'failed') {
@@ -674,14 +674,14 @@ ${analysis.feedback}`;
         } else if (attempts >= maxAttempts) {
           throw new Error('Analysis timeout');
         } else {
-          // Still processing, continue polling
-          setTimeout(poll, 1000);
+          // Still processing, continue polling with shorter interval
+          setTimeout(poll, 800); // Faster polling
         }
       } catch (error) {
         console.error('Analysis polling error:', error);
         toast({
           title: "Analysis Failed",
-          description: "Failed to complete CV analysis. Please try again.",
+          description: "Please try again.",
           variant: "destructive"
         });
         setIsProcessing(false);
@@ -740,7 +740,7 @@ ${analysis.feedback}`;
         {/* Chat Area */}
         <Card className="flex-1 glass-enhanced border border-border/30 mb-6">
           <CardContent className="p-0 h-full flex flex-col">
-            <ScrollArea className="flex-1 p-6">
+            <ScrollArea className="flex-1 p-6 scroll-container scrollbar-thin">
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
@@ -749,48 +749,64 @@ ${analysis.feedback}`;
                   </div>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                      className={`flex items-start gap-3 ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                     >
-                      <div
-                        className={`max-w-[80%] rounded-lg p-4 ${
-                          message.type === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'glass-enhanced border border-border/30'
-                        }`}
-                      >
-                        <div className="flex items-start space-x-2">
-                          {message.type === 'assistant' && <Bot className="w-5 h-5 mt-1 text-primary" />}
-                          {message.type === 'user' && <User className="w-5 h-5 mt-1" />}
-                          <div className="flex-1">
-                            <div className="prose prose-invert max-w-none">
-                              {message.content.includes('#') ? (
-                                <div dangerouslySetInnerHTML={{ 
-                                  __html: message.content
-                                    .replace(/^# (.+)$/gm, '<h1 class="text-xl font-bold mb-3">$1</h1>')
-                                    .replace(/^## (.+)$/gm, '<h2 class="text-lg font-semibold mb-2 text-primary">$1</h2>')
-                                    .replace(/^\*\*(.+?)\*\*/gm, '<strong class="text-primary">$1</strong>')
-                                    .replace(/^• (.+)$/gm, '<li class="ml-4">$1</li>')
-                                    .replace(/^(\d+)\. (.+)$/gm, '<div class="mb-1"><span class="text-primary font-semibold">$1.</span> $2</div>')
-                                }} />
-                              ) : (
-                                <p>{message.content}</p>
-                              )}
-                            </div>
-                            {message.audioUrl && (
+                      {/* Avatar */}
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                        message.type === 'user' 
+                          ? 'bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg' 
+                          : 'bg-gradient-to-br from-gray-700 to-gray-800 border border-primary/30 shadow-lg'
+                      }`}>
+                        {message.type === 'user' ? 
+                          <User className="w-4 h-4 text-white" /> : 
+                          <Bot className="w-4 h-4 text-primary" />
+                        }
+                      </div>
+
+                      {/* Message bubble */}
+                      <div className={`flex-1 max-w-[75%] min-w-0 ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
+                        <div
+                          className={`message-bubble inline-block p-4 rounded-2xl shadow-xl backdrop-blur-xl border transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] ${
+                            message.type === 'user'
+                              ? 'bg-gradient-to-br from-blue-600 via-purple-600 to-blue-700 text-white border-blue-400/20 rounded-br-md'
+                              : 'bg-gradient-to-br from-gray-800/95 to-gray-900/95 border-white/10 text-white rounded-bl-md'
+                          }`}
+                        >
+                          <div className="prose prose-sm prose-invert max-w-none break-words overflow-hidden">
+                            {message.content.includes('#') ? (
+                              <div dangerouslySetInnerHTML={{ 
+                                __html: message.content
+                                  .replace(/^# (.+)$/gm, '<h1 class="text-lg font-bold mb-3 text-white">$1</h1>')
+                                  .replace(/^## (.+)$/gm, '<h2 class="text-base font-semibold mb-2 text-blue-300">$1</h2>')
+                                  .replace(/^\*\*(.+?)\*\*/gm, '<strong class="text-blue-300">$1</strong>')
+                                  .replace(/^• (.+)$/gm, '<div class="ml-2 mb-1 text-sm">• $1</div>')
+                                  .replace(/^(\d+)\. (.+)$/gm, '<div class="mb-1 text-sm"><span class="text-blue-300 font-semibold">$1.</span> $2</div>')
+                              }} />
+                            ) : (
+                              <p className="m-0 text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                            )}
+                          </div>
+                          
+                          {message.audioUrl && (
+                            <div className="mt-3 flex items-center gap-2">
                               <Button
                                 onClick={() => playAudio(message.audioUrl!)}
                                 variant="ghost"
                                 size="sm"
-                                className="mt-2"
+                                className="bg-white/10 hover:bg-white/20 text-white h-7 px-3 rounded-lg transition-all duration-200 hover:scale-105 text-xs"
                               >
-                                <Volume2 className="w-4 h-4 mr-2" />
-                                Play Audio
+                                <Volume2 className="w-3 h-3 mr-1" />
+                                Play
                               </Button>
-                            )}
+                            </div>
+                          )}
+                          
+                          <div className="text-xs opacity-50 mt-2 font-mono">
+                            {message.timestamp.toLocaleTimeString()}
                           </div>
                         </div>
                       </div>
