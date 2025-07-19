@@ -98,7 +98,7 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
   return (
     <div className="space-y-6">
       {/* Avatar Display Card */}
-      <Card className="hyperdash-card shadow-xl min-h-96">
+      <Card className="glass-card shadow-xl border-border/20 min-h-96">
         <CardContent className="p-6">
           <div className="text-center mb-6">
             <h3 className="text-xl font-semibold text-foreground mb-2">Your AI Career Coach</h3>
@@ -115,10 +115,10 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
           {/* Avatar Container */}
           <div className="flex items-center justify-center mb-6">
             <div className="relative">
-              <div className={`w-32 h-32 hyperdash-gradient rounded-full flex items-center justify-center avatar-glow ${
+              <div className={`w-32 h-32 grok-gradient rounded-full flex items-center justify-center avatar-glow ${
                 isSpeaking ? 'animate-pulse' : ''
               }`}>
-                <User className="text-primary-foreground w-12 h-12" />
+                <User className="text-white w-12 h-12" />
               </div>
               {isSpeaking && (
                 <div className="absolute -inset-4 border-2 border-primary rounded-full pulse-ring"></div>
@@ -129,7 +129,7 @@ export default function AvatarSection({ analysis, isProcessing }: AvatarSectionP
           {/* Status Display */}
           <div className="text-center space-y-4">
             {!isProcessing && !isCompleted && (
-              <div className="hyperdash-surface rounded-lg p-4">
+              <div className="bg-card/50 rounded-lg p-4 border border-border/30">
                 <Clock className="text-muted-foreground w-8 h-8 mb-2 mx-auto" />
                 <p className="text-muted-foreground font-medium">Ready to analyze your CV</p>
                 <p className="text-sm text-muted-foreground/70 mt-1">Upload your PDF to get started</p>

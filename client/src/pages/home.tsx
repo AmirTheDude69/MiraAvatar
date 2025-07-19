@@ -100,20 +100,20 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 hyperdash-gradient rounded-xl flex items-center justify-center shadow-lg">
-                <User className="text-primary-foreground w-5 h-5" />
+              <div className="w-10 h-10 grok-gradient rounded-xl flex items-center justify-center shadow-lg">
+                <User className="text-white w-5 h-5" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-foreground hyperdash-gradient-text">AI Avatar CV Analyzer</h1>
+                <h1 className="text-xl font-semibold text-foreground grok-gradient-text">AI Avatar CV Analyzer</h1>
                 <p className="text-sm text-muted-foreground">Professional Career Feedback</p>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hyperdash-hover">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground grok-hover">
                 <HelpCircle className="w-4 h-4 mr-1" />
                 Help
               </Button>
-              <Button size="sm" className="hyperdash-button">
+              <Button size="sm" className="grok-gradient text-white hover:opacity-90">
                 <User className="w-4 h-4 mr-1" />
                 Account
               </Button>
@@ -125,7 +125,7 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold hyperdash-gradient-text mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold grok-gradient-text mb-4">
             CV Analysis Redefined
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -147,7 +147,7 @@ export default function Home() {
           {!analysisId && (
             <Button 
               onClick={loadCompletedAnalysis}
-              className="hyperdash-button mt-4"
+              className="grok-gradient text-white mt-4"
             >
               🔗 Load Backend Results
             </Button>

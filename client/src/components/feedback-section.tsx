@@ -38,7 +38,7 @@ export default function FeedbackSection({ analysis, onAnalyzeAnother }: Feedback
 
   return (
     <div className="mt-12">
-      <Card className="hyperdash-card shadow-xl">
+      <Card className="glass-card shadow-xl border-border/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl font-semibold text-foreground">CV Analysis Results</h3>
@@ -50,7 +50,7 @@ export default function FeedbackSection({ analysis, onAnalyzeAnother }: Feedback
           
           {/* AI Feedback Text */}
           {analysis.analysis?.feedback && (
-            <div className="mb-6 hyperdash-surface rounded-lg p-6">
+            <div className="mb-6 bg-card/50 rounded-lg p-6 border border-border/30">
               <h4 className="text-lg font-semibold text-foreground mb-3">AI Analysis Feedback</h4>
               <p className="text-foreground leading-relaxed whitespace-pre-wrap">
                 {analysis.analysis.feedback}
@@ -61,7 +61,7 @@ export default function FeedbackSection({ analysis, onAnalyzeAnother }: Feedback
           {/* Feedback Content */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Strengths */}
-            <div className="status-success/10 rounded-lg p-4 border border-green-400/20">
+            <div className="bg-green-400/10 rounded-lg p-4 border border-green-400/20">
               <div className="flex items-center space-x-2 mb-3">
                 <Star className="text-green-400 w-5 h-5" />
                 <h4 className="font-semibold text-foreground">Strengths</h4>
