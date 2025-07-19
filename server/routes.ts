@@ -330,11 +330,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Mark as processing
           session.isProcessing = true;
           
-          console.log('Received voice data, size:', message.audioData?.length || 0);
+          console.log('🎤 Received voice data for chained processing, size:', message.audioData?.length || 0);
           
           ws.send(JSON.stringify({
             type: 'processing',
-            message: 'Processing your voice input...'
+            message: 'Processing your voice using chained architecture...',
+            step: 'starting'
           }));
 
           try {
@@ -342,9 +343,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const audioBuffer = Buffer.from(message.audioData, 'base64');
             console.log('Created audio buffer:', audioBuffer.length, 'bytes');
             
-            // Process voice input with conversation context
+            // Send step-by-step updates to user
+            ws.send(JSON.stringify({
+              type: 'processing_step',
+              step: 'transcription',
+              message: 'Converting speech to text with OpenAI Whisper...'
+            }));
+            
+            // Process voice input with conversation context using chained architecture
             const result = await processVoiceWithContext(audioBuffer, session.conversationHistory);
-            console.log('Voice processing result:', { text: result.text, responseLength: result.response.length });
+            console.log('Chained processing result:', { text: result.text, responseLength: result.response.length });
+            
+            // Send transcription immediately for faster feedback
+            ws.send(JSON.stringify({
+              type: 'transcription_complete',
+              transcription: result.text,
+              step: 'text_processing'
+            }));
             
             // Update conversation history
             session.conversationHistory.push(
@@ -364,13 +379,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               type: "voice"
             });
 
-            // Send response
+            // Send final complete response
             ws.send(JSON.stringify({
               type: 'voice_response',
               userText: result.text,
               response: result.response,
               audioUrl: result.audioUrl,
-              sessionId
+              sessionId,
+              chainedProcessing: true
             }));
 
             session.isProcessing = false;
@@ -420,15 +436,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     conversationHistory: Array<{ role: 'user' | 'assistant'; content: string }>
   ): Promise<{ text: string; response: string; audioUrl: string }> {
     try {
-      // Transcribe audio using OpenAI Whisper
+      console.log('🎤 CHAINED ARCHITECTURE - Step 1: OpenAI Whisper (Speech-to-Text)');
+      console.log('Audio buffer size:', audioData.length, 'bytes');
+      
+      // STEP 1: OpenAI Whisper - Convert speech to text
       const transcription = await openaiService.transcribeAudio(audioData);
       const userText = transcription.text;
+      console.log('✅ Transcription complete:', userText);
       
-      // Generate contextual AI response
+      console.log('🤖 CHAINED ARCHITECTURE - Step 2: OpenAI GPT (Text Processing)');
+      console.log('Conversation history length:', conversationHistory.length, 'messages');
+      
+      // STEP 2: OpenAI GPT - Process text and generate response  
       const aiResponse = await openaiService.chatWithContext(userText, conversationHistory);
+      console.log('✅ AI response generated:', aiResponse.substring(0, 100) + '...');
       
-      // Generate voice response
+      console.log('🎵 CHAINED ARCHITECTURE - Step 3: ElevenLabs (Text-to-Speech)');
+      
+      // STEP 3: ElevenLabs - Convert text response to speech
       const audioUrl = await elevenLabsService.generateSpeech(aiResponse);
+      console.log('✅ Audio synthesis complete:', audioUrl);
+      
+      console.log('🎯 CHAINED PROCESSING COMPLETE - All 3 steps successful!');
       
       return {
         text: userText,
@@ -436,7 +465,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         audioUrl
       };
     } catch (error) {
-      console.error('Voice processing error:', error);
+      console.error('❌ Voice processing failed in chained architecture:', error);
+      error.step = error.message.includes('transcribe') ? 'whisper' : 
+                   error.message.includes('chat') ? 'gpt' : 
+                   error.message.includes('speech') ? 'elevenlabs' : 'unknown';
       throw error;
     }
   }

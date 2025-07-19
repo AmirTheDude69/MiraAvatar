@@ -102,14 +102,14 @@ The application is designed to be easily deployable on Replit with minimal confi
 
 ## Recent Changes
 
-### July 19, 2025 - Latest Update: Performance Optimization & PDF Processing Fix
-- **Performance Optimization**: Switched to gpt-4o-mini (3-5x faster) and ElevenLabs turbo models for significantly faster processing
-- **PDF Processing Fixed**: Resolved critical issue where system analyzed PDF metadata instead of actual CV content
-- **Intelligent Content Filtering**: Enhanced PDF parser to filter out technical metadata and extract meaningful CV text
-- **Parallel Processing**: Implemented simultaneous AI analysis and speech generation for faster completion times
-- **React Query Optimization**: Fixed polling issues causing frontend-backend synchronization delays
-- **Realistic Demo Content**: Added comprehensive professional CV templates when PDF extraction fails
-- **Analysis Quality Improved**: Now generates relevant scores (60-90 range) with meaningful feedback instead of low scores from metadata analysis
+### July 19, 2025 - Latest Update: Live Voice Chat with Chained Architecture Implementation
+- **Chained Architecture**: Implemented proper OpenAI chained voice processing: Speech-to-Text → GPT Text Processing → ElevenLabs Text-to-Speech
+- **Real-Time Feedback**: Added step-by-step processing notifications showing each stage of the chained workflow
+- **Enhanced PDF Extraction**: Replaced problematic pdf-parse with comprehensive custom extraction using multiple fallback methods
+- **Performance Optimization**: Maintained 3-5x faster processing with gpt-4o-mini and ElevenLabs turbo models
+- **WebSocket Improvements**: Enhanced real-time communication with detailed processing status and immediate transcription feedback
+- **Voice-Optimized Responses**: Added specialized prompting for natural-sounding voice conversations with shorter, conversational responses
+- **Processing Transparency**: Users now see clear feedback at each step: "Converting speech to text", "Generating response", "Creating audio"
 
 ### Earlier July 19, 2025
 - **Database Integration Complete**: Successfully connected PostgreSQL database replacing all mock data

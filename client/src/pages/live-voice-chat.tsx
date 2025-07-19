@@ -30,6 +30,7 @@ export default function LiveVoiceChat() {
   const [isConnected, setIsConnected] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processingStep, setProcessingStep] = useState<string>('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
@@ -92,10 +93,31 @@ export default function LiveVoiceChat() {
           
         case 'processing':
           setIsProcessing(true);
+          setProcessingStep(data.step || 'starting');
+          break;
+          
+        case 'processing_step':
+          setProcessingStep(data.step);
+          // Show step-by-step feedback for chained architecture
+          toast({
+            title: "Chained Processing",
+            description: data.message,
+            duration: 2000
+          });
+          break;
+          
+        case 'transcription_complete':
+          // Show immediate transcription feedback
+          toast({
+            title: "Speech Recognized",
+            description: `"${data.transcription}"`,
+            duration: 3000
+          });
           break;
           
         case 'voice_response':
           setIsProcessing(false);
+          setProcessingStep('');
           const newMessage: VoiceMessage = {
             id: Date.now().toString(),
             userText: data.userText,
@@ -109,13 +131,23 @@ export default function LiveVoiceChat() {
           if (data.audioUrl) {
             playAudio(data.audioUrl);
           }
+          
+          // Show completion feedback for chained processing
+          if (data.chainedProcessing) {
+            toast({
+              title: "Voice Processing Complete",
+              description: "Chained: Speech-to-Text → AI Response → Text-to-Speech",
+              duration: 3000
+            });
+          }
           break;
           
         case 'error':
           setIsProcessing(false);
+          setProcessingStep('');
           toast({
             title: "Error",
-            description: data.message,
+            description: data.message + (data.step ? ` (Failed at: ${data.step})` : ''),
             variant: "destructive"
           });
           break;
