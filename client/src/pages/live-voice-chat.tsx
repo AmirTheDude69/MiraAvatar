@@ -34,7 +34,7 @@ export default function LiveVoiceChat() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
-  const [interactionMode, setInteractionMode] = useState<'hold' | 'click' | 'continuous'>('hold');
+  const [interactionMode, setInteractionMode] = useState<'click' | 'continuous'>('click');
   const [isContinuousMode, setIsContinuousMode] = useState(false);
   
   const wsRef = useRef<WebSocket | null>(null);
@@ -606,14 +606,6 @@ export default function LiveVoiceChat() {
               <div className="flex items-center space-x-4 glass-enhanced border border-border/30 rounded-full px-4 py-2">
                 <span className="text-sm text-muted-foreground">Interaction Mode:</span>
                 <Button
-                  onClick={() => setInteractionMode('hold')}
-                  variant={interactionMode === 'hold' ? 'default' : 'ghost'}
-                  size="sm"
-                  className="rounded-full"
-                >
-                  Hold to Talk
-                </Button>
-                <Button
                   onClick={() => setInteractionMode('click')}
                   variant={interactionMode === 'click' ? 'default' : 'ghost'}
                   size="sm"
@@ -775,14 +767,7 @@ export default function LiveVoiceChat() {
               {/* Voice Controls */}
               <div className="text-center">
                 <Button
-                  {...(interactionMode === 'hold' 
-                    ? {
-                        onMouseDown: startRecording,
-                        onMouseUp: stopRecording,
-                        onTouchStart: startRecording,
-                        onTouchEnd: stopRecording
-                      }
-                    : interactionMode === 'click'
+                  {...(interactionMode === 'click'
                     ? {
                         onClick: toggleRecording
                       }
@@ -818,17 +803,15 @@ export default function LiveVoiceChat() {
                     : isContinuousMode
                     ? "🎙️ Live conversation active - speak naturally!"
                     : isRecording
-                    ? (interactionMode === 'hold' ? "Release to send..." : "Click to stop recording...")
-                    : (interactionMode === 'hold' ? "Hold to speak" : 
-                       interactionMode === 'click' ? "Click to start speaking" : 
+                    ? "Click to stop recording..."
+                    : (interactionMode === 'click' ? "Click to start speaking" : 
                        "Click to start live conversation")}
                 </p>
                 
                 {/* Mode indicator */}
                 <p className="text-xs text-muted-foreground/70 mt-1">
-                  {interactionMode === 'hold' ? 'Hold & Release Mode' : 
-                   interactionMode === 'click' ? 'Click to Toggle Mode' : 
-                   isContinuousMode ? '🔴 LIVE - Auto-listening after each response' : 'Live Conversation Mode'}
+                  {interactionMode === 'click' ? 'Click to Toggle Mode' : 
+                   isContinuousMode ? 'Live - Auto-listening after each response' : 'Live Conversation Mode'}
                 </p>
               </div>
             </CardContent>
