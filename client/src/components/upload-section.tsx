@@ -69,21 +69,28 @@ export default function UploadSection({ onFileUpload, isUploading }: UploadSecti
   };
 
   return (
-    <div className="space-y-6">
-      {/* Upload Card */}
-      <Card className="hyperdash-card shadow-2xl border-border/20 hyperdash-glow">
-        <CardContent className="p-6">
-          <div className="text-center">
-            <h2 className="text-2xl font-semibold text-foreground mb-2 hyperdash-gradient-text">Upload CV</h2>
-            <p className="text-muted-foreground mb-6">Advanced AI career analysis with voice feedback</p>
+    <div className="space-y-8">
+      {/* Main Upload Card */}
+      <Card className="hyperdash-card shadow-2xl border-border/20 interactive-hover relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-purple-500/5"></div>
+        <CardContent className="relative p-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center space-x-3 mb-4">
+              <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+              <h2 className="text-3xl font-bold text-gradient-primary">Upload Your CV</h2>
+              <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse delay-1000"></div>
+            </div>
+            <p className="text-lg text-muted-foreground">
+              Get instant AI-powered career insights with personalized voice feedback
+            </p>
           </div>
           
-          {/* File Upload Area */}
+          {/* Enhanced File Upload Area */}
           <div
-            className={`upload-area border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 interactive-element ${
+            className={`relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-500 group ${
               dragActive
-                ? 'border-primary/50 bg-primary/20 hyperdash-glow'
-                : 'border-border/30 hover:border-primary/50'
+                ? 'border-primary/60 bg-primary/10 scale-105'
+                : 'border-border/40 hover:border-primary/50 hover:bg-primary/5'
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
@@ -91,19 +98,29 @@ export default function UploadSection({ onFileUpload, isUploading }: UploadSecti
             onDrop={handleDrop}
             onClick={handleClick}
           >
-            <div className="space-y-4">
-              <div className="mx-auto w-16 h-16 hyperdash-gradient rounded-full flex items-center justify-center hyperdash-glow">
-                <FileText className="text-black w-8 h-8" />
+            <div className="space-y-6">
+              <div className="relative mx-auto w-20 h-20 hyperdash-gradient rounded-2xl flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300">
+                <FileText className="text-black w-10 h-10" />
+                <div className="absolute -inset-2 hyperdash-gradient rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity"></div>
               </div>
-              <div>
-                <p className="text-lg font-medium text-foreground text-glow">Drop your CV here</p>
-                <p className="text-muted-foreground">or click to browse files</p>
-              </div>
-              <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground">
-                <CheckCircle className="text-primary w-4 h-4" />
-                <span>PDF files only • Max 10MB</span>
+              
+              <div className="space-y-3">
+                <h3 className="text-xl font-semibold text-foreground">Drop your CV here</h3>
+                <p className="text-muted-foreground">or click to browse your files</p>
+                
+                <div className="flex items-center justify-center space-x-3 text-sm">
+                  <div className="flex items-center space-x-2 px-3 py-1 bg-primary/10 rounded-full">
+                    <CheckCircle className="text-primary w-4 h-4" />
+                    <span className="text-primary font-medium">PDF Only</span>
+                  </div>
+                  <div className="flex items-center space-x-2 px-3 py-1 bg-purple-500/10 rounded-full">
+                    <CheckCircle className="text-purple-400 w-4 h-4" />
+                    <span className="text-purple-400 font-medium">Max 10MB</span>
+                  </div>
+                </div>
               </div>
             </div>
+            
             <input
               ref={fileInputRef}
               type="file"
@@ -113,47 +130,68 @@ export default function UploadSection({ onFileUpload, isUploading }: UploadSecti
             />
           </div>
 
-          {/* Upload Button */}
-          <Button 
-            className="w-full mt-6 grok-gradient text-white hover:opacity-90 transition-opacity" 
-            disabled={isUploading}
-            onClick={handleClick}
-          >
-            <Rocket className="w-4 h-4 mr-2" />
-            {isUploading ? 'Uploading...' : 'Analyze My CV'}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Features Card */}
-      <Card className="glass-card shadow-xl border-border/20">
-        <CardContent className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">What You'll Get</h3>
-          <div className="space-y-3">
-            <div className="flex items-start space-x-3">
-              <Brain className="text-primary mt-1 w-5 h-5" />
-              <div>
-                <p className="font-medium text-foreground">AI-Powered Analysis</p>
-                <p className="text-sm text-muted-foreground">Deep analysis of your skills, experience, and achievements</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <Mic className="text-green-400 mt-1 w-5 h-5" />
-              <div>
-                <p className="font-medium text-foreground">Voice Feedback</p>
-                <p className="text-sm text-muted-foreground">Natural speech with personalized recommendations</p>
-              </div>
-            </div>
-            <div className="flex items-start space-x-3">
-              <TrendingUp className="text-purple-400 mt-1 w-5 h-5" />
-              <div>
-                <p className="font-medium text-foreground">Actionable Insights</p>
-                <p className="text-sm text-muted-foreground">Specific suggestions to improve your CV</p>
-              </div>
-            </div>
+          {/* Enhanced Upload Button */}
+          <div className="flex justify-center mt-8">
+            <Button 
+              size="lg"
+              className="px-12 py-4 text-lg font-semibold hyperdash-gradient text-black hover:shadow-2xl hover:scale-105 transition-all duration-300 border-0" 
+              disabled={isUploading}
+              onClick={handleClick}
+            >
+              {isUploading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-3"></div>
+                  Processing Upload...
+                </>
+              ) : (
+                <>
+                  <Rocket className="w-5 h-5 mr-3" />
+                  Start AI Analysis
+                </>
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Enhanced Features Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="glass-enhanced interactive-hover border-primary/20">
+          <CardContent className="p-6 text-center">
+            <div className="w-14 h-14 hyperdash-gradient rounded-2xl flex items-center justify-center mx-auto mb-4 floating-animation">
+              <Brain className="text-black w-7 h-7" />
+            </div>
+            <h3 className="font-bold text-foreground mb-2">AI Analysis</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Advanced machine learning evaluates your experience and skills
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-enhanced interactive-hover border-purple-500/20">
+          <CardContent className="p-6 text-center">
+            <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 floating-animation delay-1000">
+              <Mic className="text-white w-7 h-7" />
+            </div>
+            <h3 className="font-bold text-foreground mb-2">Voice Feedback</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Natural speech delivery with personalized career recommendations
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-enhanced interactive-hover border-cyan-500/20">
+          <CardContent className="p-6 text-center">
+            <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-2xl flex items-center justify-center mx-auto mb-4 floating-animation delay-2000">
+              <TrendingUp className="text-white w-7 h-7" />
+            </div>
+            <h3 className="font-bold text-foreground mb-2">Career Insights</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Actionable suggestions to boost your professional profile
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

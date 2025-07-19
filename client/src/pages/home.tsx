@@ -102,77 +102,121 @@ export default function Home() {
   console.log('Analysis ID:', analysisId);
 
   return (
-    <div className="min-h-screen bg-background font-sans">
+    <div className="min-h-screen bg-background font-sans relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        <div className="absolute top-3/4 left-1/2 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-4000"></div>
+      </div>
+
       {/* Header */}
-      <header className="glass-panel border-b border-border/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 hyperdash-gradient rounded-xl flex items-center justify-center shadow-lg hyperdash-glow">
-                <User className="text-black w-5 h-5" />
+      <header className="relative z-10 backdrop-blur-xl bg-background/60 border-b border-border/20 sticky top-0">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="w-12 h-12 hyperdash-gradient rounded-2xl flex items-center justify-center shadow-xl">
+                  <User className="text-black w-6 h-6" />
+                </div>
+                <div className="absolute -inset-1 hyperdash-gradient rounded-2xl blur opacity-30"></div>
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-foreground hyperdash-gradient-text text-glow">CV Analyzer Pro</h1>
-                <p className="text-sm text-muted-foreground">Professional AI Career Coach</p>
+                <h1 className="text-2xl font-bold text-foreground hyperdash-gradient-text">CV Analyzer Pro</h1>
+                <p className="text-sm text-muted-foreground/80">AI-Powered Career Intelligence Platform</p>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hyperdash-hover">
-                <HelpCircle className="w-4 h-4 mr-1" />
-                Help
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground transition-colors">
+                <HelpCircle className="w-4 h-4 mr-2" />
+                Help & Support
               </Button>
-              <Button size="sm" className="hyperdash-button text-white">
-                <User className="w-4 h-4 mr-1" />
-                Account
+              <Button size="sm" className="hyperdash-button text-white font-medium">
+                <User className="w-4 h-4 mr-2" />
+                My Account
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-12">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-6xl font-bold hyperdash-gradient-text mb-6 text-glow">
-            Career Intelligence
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Advanced AI-powered career analysis with real-time insights and personalized voice feedback
-          </p>
-        </div>
+        <section className="text-center mb-16">
+          <div className="space-y-8">
+            <div className="space-y-6">
+              <h2 className="text-5xl md:text-7xl font-black hyperdash-gradient-text leading-tight">
+                Career Intelligence
+              </h2>
+              <div className="max-w-3xl mx-auto">
+                <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
+                  Transform your career with cutting-edge AI analysis, personalized insights, and interactive voice feedback
+                </p>
+              </div>
+            </div>
+            
+            {/* Feature highlights */}
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <div className="flex items-center space-x-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
+                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                <span className="text-primary font-medium">Real-time AI Analysis</span>
+              </div>
+              <div className="flex items-center space-x-2 px-4 py-2 bg-purple-500/10 rounded-full border border-purple-500/20">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <span className="text-purple-400 font-medium">Voice Feedback</span>
+              </div>
+              <div className="flex items-center space-x-2 px-4 py-2 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+                <div className="w-2 h-2 bg-cyan-500 rounded-full"></div>
+                <span className="text-cyan-400 font-medium">Actionable Insights</span>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Process Steps */}
-        <ProcessSteps currentStep={currentStep} />
+        <section className="mb-16">
+          <ProcessSteps currentStep={currentStep} />
+        </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upload Section */}
-          <UploadSection 
-            onFileUpload={handleFileUpload}
-            isUploading={uploadMutation.isPending}
-          />
+        {/* Main Content Grid */}
+        <section className="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-16">
+          {/* Upload Section - Takes 2 columns on XL screens */}
+          <div className="xl:col-span-2">
+            <UploadSection 
+              onFileUpload={handleFileUpload}
+              isUploading={uploadMutation.isPending}
+            />
+          </div>
           
-          {/* Debug Button - Load Completed Analysis */}
-          {!analysisId && (
+          {/* Avatar Section - Takes 1 column on XL screens */}
+          <div className="xl:col-span-1">
+            <AvatarSection 
+              analysis={analysis || null}
+              isProcessing={currentStep === 'processing'}
+            />
+          </div>
+        </section>
+
+        {/* Debug Controls */}
+        {!analysisId && (
+          <div className="flex justify-center mb-8">
             <Button 
               onClick={loadCompletedAnalysis}
-              className="hyperdash-button hyperdash-glow mt-4"
+              variant="outline"
+              className="border-primary/30 text-primary hover:bg-primary/10"
             >
-              🔗 Connect to Backend
+              🔗 Load Demo Analysis
             </Button>
-          )}
-
-          {/* Avatar Section */}
-          <AvatarSection 
-            analysis={analysis || null}
-            isProcessing={currentStep === 'processing'}
-          />
-        </div>
+          </div>
+        )}
 
         {/* Feedback Section */}
-        <FeedbackSection 
-          analysis={analysis || null}
-          onAnalyzeAnother={handleAnalyzeAnother}
-        />
+        <section>
+          <FeedbackSection 
+            analysis={analysis || null}
+            onAnalyzeAnother={handleAnalyzeAnother}
+          />
+        </section>
       </main>
 
       {/* Footer */}
