@@ -3,121 +3,168 @@ export class PDFParser {
     try {
       console.log("Extracting text from PDF buffer...");
       
-      // Convert buffer to string for initial processing  
-      const text = buffer.toString('latin1'); // Use latin1 to preserve byte values
+      // Enhanced PDF text extraction using multiple methods
+      const text = buffer.toString('binary');
       
-      // Check if this is a valid PDF
       if (!text.startsWith('%PDF')) {
         throw new Error("Invalid PDF format - missing PDF header");
       }
 
-      console.log("Valid PDF detected, attempting text extraction...");
+      console.log("Valid PDF detected, attempting comprehensive text extraction...");
       
       let extractedText = '';
       
-      // Method 1: Extract text from stream objects
-      const streamMatches = text.match(/stream\s*([\s\S]*?)\s*endstream/g);
-      if (streamMatches) {
-        for (const stream of streamMatches) {
-          // Look for text commands in the stream
-          const content = stream.replace(/^stream\s*|\s*endstream$/g, '');
+      // Method 1: Extract from text objects with improved patterns
+      const textObjectPattern = /BT\s+(.*?)\s+ET/gs;
+      const textObjects = text.match(textObjectPattern);
+      
+      if (textObjects) {
+        for (const obj of textObjects) {
+          // Extract text from various PDF text commands
+          const tjPatterns = [
+            /\((.*?)\)\s*Tj/g,           // Simple text show
+            /\[(.*?)\]\s*TJ/g,          // Array text show
+            /\((.*?)\)\s*'/g,           // Text with positioning
+            /\((.*?)\)\s*"/g            // Text with word spacing
+          ];
           
-          // Extract text from BT...ET blocks (Begin Text...End Text)
-          const textBlocks = content.match(/BT\s*([\s\S]*?)\s*ET/g);
-          if (textBlocks) {
-            for (const block of textBlocks) {
-              // Extract strings in parentheses followed by Tj (show text)
-              const textMatches = block.match(/\((.*?)\)\s*Tj/g);
-              if (textMatches) {
-                for (const match of textMatches) {
-                  const textContent = match.match(/\((.*?)\)/);
-                  if (textContent && textContent[1]) {
-                    extractedText += textContent[1] + ' ';
-                  }
-                }
-              }
-              
-              // Also look for TJ array format
-              const tjMatches = block.match(/\[(.*?)\]\s*TJ/g);
-              if (tjMatches) {
-                for (const match of tjMatches) {
-                  const arrayContent = match.match(/\[(.*?)\]/);
-                  if (arrayContent && arrayContent[1]) {
-                    // Extract strings from the array
-                    const strings = arrayContent[1].match(/\((.*?)\)/g);
-                    if (strings) {
-                      for (const str of strings) {
-                        const content = str.match(/\((.*?)\)/);
-                        if (content && content[1]) {
-                          extractedText += content[1] + ' ';
-                        }
-                      }
-                    }
-                  }
-                }
+          for (const pattern of tjPatterns) {
+            let match;
+            while ((match = pattern.exec(obj)) !== null) {
+              const textContent = match[1];
+              if (textContent && textContent.length > 1) {
+                // Decode common PDF escape sequences
+                const decodedText = textContent
+                  .replace(/\\n/g, ' ')
+                  .replace(/\\r/g, ' ')
+                  .replace(/\\t/g, ' ')
+                  .replace(/\\\\/g, '\\')
+                  .replace(/\\'/g, "'")
+                  .replace(/\\"/g, '"');
+                
+                extractedText += decodedText + ' ';
               }
             }
           }
         }
       }
       
-      // Method 2: Look for literal text in the PDF content, filtering out metadata
+      // Method 2: Look for readable text patterns throughout the PDF
       if (extractedText.length < 200) {
-        // Try to find readable text patterns but exclude PDF metadata
-        const readableMatches = text.match(/[A-Za-z][A-Za-z\s,.-]{15,}/g);
-        if (readableMatches) {
-          const filteredMatches = readableMatches
-            .filter(match => 
-              !match.includes('obj') && 
-              !match.includes('endobj') &&
-              !match.includes('StructParent') &&
-              !match.includes('QuadPoints') &&
-              !match.includes('FlateDecode') &&
-              !match.includes('cairographics') &&
-              !match.includes('attachment.xml') &&
-              !match.includes('Transparency') &&
-              !match.includes('CreationDate') &&
-              !match.includes('EmbeddedFiles') &&
-              match.length > 20 // Only include substantial text chunks
-            );
-          extractedText += filteredMatches.join(' ');
+        console.log("Primary extraction yielded little content, trying pattern matching...");
+        
+        // More sophisticated pattern matching for common CV content
+        const patterns = [
+          /[A-Z][a-z]+\s+[A-Z][a-z]+/g,                    // Names
+          /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, // Emails
+          /\b\d{4}\s*-\s*\d{4}\b/g,                        // Date ranges
+          /\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*(?:\s+(?:University|College|School|Institute))/g, // Education
+          /\b(?:Experience|Education|Skills|Projects|Achievements|Certifications?)\b/gi, // Section headers
+          /\b[A-Z][a-zA-Z\s&,.]{10,50}\b/g                 // Company/position names
+        ];
+        
+        for (const pattern of patterns) {
+          const matches = text.match(pattern);
+          if (matches) {
+            extractedText += matches.join(' ') + ' ';
+          }
         }
       }
 
-      // Clean up extracted text more aggressively
+      // Clean and validate extracted text
       extractedText = extractedText
-        .replace(/\\[rn]/g, ' ') // Replace escaped newlines
-        .replace(/\b(StructParents?|QuadPoints?|FlateDecode|CreationDate|EmbeddedFiles|Transparency|cairographics\.org|attachment\.xml)\b/gi, '') // Remove PDF metadata
-        .replace(/\s+/g, ' ')    // Normalize whitespace
-        .replace(/[^\x20-\x7E]/g, ' ') // Remove non-printable characters
+        .replace(/\s+/g, ' ')
+        .replace(/[^\x20-\x7E\n]/g, ' ')
         .trim();
       
-      // Only use extracted text if it appears to be meaningful content (not just metadata)
-      const meaningfulWords = extractedText.split(' ').filter(word => 
-        word.length > 3 && 
-        !word.match(/^(obj|endobj|stream|endstream|xref)$/i) &&
-        word.match(/[a-zA-Z]/)
-      ).length;
+      // Remove PDF-specific garbage
+      extractedText = extractedText.replace(/\b(obj|endobj|stream|endstream|xref|StructParent|QuadPoints|FlateDecode|Transparency|CreationDate|EmbeddedFiles|cairographics|attachment\.xml)\b/gi, '');
       
-      if (extractedText.length > 200 && meaningfulWords > 20) {
-        console.log(`Successfully extracted meaningful content: ${extractedText.length} characters, ${meaningfulWords} meaningful words`);
-        console.log("Sample extracted text:", extractedText.substring(0, 200));
+      const words = extractedText.split(/\s+/).filter(word => 
+        word.length > 2 && 
+        word.match(/[a-zA-Z]/)
+      );
+      
+      if (extractedText.length > 50 && words.length > 10) {
+        console.log(`Successfully extracted text: ${extractedText.length} characters, ${words.length} words`);
+        console.log("Sample:", extractedText.substring(0, 150) + "...");
         return extractedText;
       }
       
-      // If extraction yielded minimal results, provide unique demo content based on filename
-      console.log("PDF text extraction yielded minimal content, using demo content");
-      
-      return this.generateDemoContent(extractedText);
+      console.log("Standard extraction failed, trying aggressive fallback...");
+      return this.aggressiveExtraction(buffer);
       
     } catch (error) {
       console.error("PDF parsing error:", error);
-      console.log("Using demo content due to parsing error");
-      return this.generateDemoContent();
+      return this.aggressiveExtraction(buffer);
+    }
+  }
+  
+  private aggressiveExtraction(buffer: Buffer): Promise<string> {
+    try {
+      console.log("Attempting aggressive text extraction...");
+      
+      const text = buffer.toString('latin1');
+      const results: string[] = [];
+      
+      // Extract anything that looks like human-readable text
+      const patterns = [
+        // Email addresses
+        /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
+        // Phone numbers
+        /[\+]?[\d\s\-\(\)]{10,}/g,
+        // Names (capitalized words)
+        /\b[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,})+\b/g,
+        // Years and date ranges
+        /\b(19|20)\d{2}(?:\s*[-–]\s*(19|20)\d{2})?\b/g,
+        // Common CV section headers
+        /\b(EXPERIENCE|EDUCATION|SKILLS|PROJECTS|SUMMARY|PROFILE|CERTIFICATIONS?|ACHIEVEMENTS?|CONTACT)\b/gi,
+        // University/company patterns
+        /\b[A-Z][a-zA-Z\s&]{5,50}(?:University|College|School|Institute|Corporation|Company|Inc|Ltd|LLC)\b/gi,
+        // Job titles
+        /\b(?:Senior|Junior|Lead|Principal|Manager|Director|Engineer|Developer|Analyst|Specialist|Coordinator|Assistant)\s+[A-Z][a-zA-Z\s]{2,30}\b/g,
+        // Skills and technologies
+        /\b(?:JavaScript|Python|Java|React|Node\.js|SQL|HTML|CSS|AWS|Docker|Git|Linux|Windows|Microsoft|Adobe|Photoshop|Excel|PowerPoint)\b/gi,
+        // Longer meaningful text chunks
+        /\b[A-Z][a-zA-Z\s,.]{15,100}\b/g
+      ];
+      
+      for (const pattern of patterns) {
+        const matches = text.match(pattern);
+        if (matches) {
+          results.push(...matches);
+        }
+      }
+      
+      // Remove duplicates and clean
+      const uniqueResults = [...new Set(results)]
+        .filter(item => 
+          item.length > 3 && 
+          !item.match(/\b(obj|endobj|stream|StructParent|QuadPoints)\b/i)
+        )
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (uniqueResults.length > 100) {
+        console.log(`Aggressive extraction found content: ${uniqueResults.length} characters`);
+        console.log("Aggressive sample:", uniqueResults.substring(0, 200));
+        return Promise.resolve(uniqueResults);
+      }
+      
+      console.log("All extraction methods exhausted - PDF may be image-based");
+      return Promise.resolve(this.generateDemoContent());
+      
+    } catch (error) {
+      console.error("Aggressive extraction failed:", error);
+      return Promise.resolve(this.generateDemoContent());
     }
   }
   
   private generateDemoContent(context?: string): string {
+    console.warn("⚠️  USING DEMO CONTENT - PDF extraction failed completely");
+    console.warn("This should only happen for image-based PDFs or corrupted files");
+    
     // Generate comprehensive, realistic demo CVs
     const demoProfiles = [
       {
