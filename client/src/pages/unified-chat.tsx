@@ -707,7 +707,7 @@ ${analysis.feedback}`;
               onClick={() => setInteractionMode('text')}
               variant={interactionMode === 'text' ? 'default' : 'ghost'}
               size="sm"
-              className="rounded-full"
+              className={`rounded-full ${interactionMode === 'text' ? 'selected-button-glow' : ''}`}
             >
               <MessageSquare className="w-4 h-4 mr-2" />
               Text
@@ -716,7 +716,7 @@ ${analysis.feedback}`;
               onClick={() => setInteractionMode('click-to-talk')}
               variant={interactionMode === 'click-to-talk' ? 'default' : 'ghost'}
               size="sm"
-              className="rounded-full"
+              className={`rounded-full ${interactionMode === 'click-to-talk' ? 'selected-button-glow' : ''}`}
             >
               <Mic className="w-4 h-4 mr-2" />
               Click to Talk
@@ -725,7 +725,7 @@ ${analysis.feedback}`;
               onClick={() => setInteractionMode('continuous')}
               variant={interactionMode === 'continuous' ? 'default' : 'ghost'}
               size="sm"
-              className="rounded-full"
+              className={`rounded-full ${interactionMode === 'continuous' ? 'selected-button-glow' : ''}`}
             >
               <Radio className="w-4 h-4 mr-2" />
               Continuous Chat
