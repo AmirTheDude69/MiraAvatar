@@ -48,16 +48,25 @@ export default function Home() {
     }
   });
 
-  // Analysis query
-  const { data: analysis } = useQuery({
+  // Analysis query - More robust polling with error handling
+  const { data: analysis, error: analysisError, isLoading } = useQuery({
     queryKey: ['/api/cv/analysis', analysisId],
     enabled: !!analysisId,
-    refetchInterval: (data) => {
-      console.log('Polling analysis:', analysisId, 'Status:', data?.status);
-      // Poll every 2 seconds if still processing
-      return data?.status === 'processing' ? 2000 : false;
+    refetchInterval: (data, query) => {
+      console.log('Polling analysis:', analysisId, 'Status:', data?.status, 'Data:', data);
+      // Continue polling if still processing or if we don't have data yet
+      if (!data || data.status === 'processing') {
+        return 2000; // Poll every 2 seconds
+      }
+      return false; // Stop polling when completed
     },
-  }) as { data: CvAnalysis | undefined };
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    retry: (failureCount, error) => {
+      console.log('Query retry attempt:', failureCount, error);
+      return failureCount < 3;
+    }
+  }) as { data: CvAnalysis | undefined; error: any; isLoading: boolean };
 
   const handleFileUpload = (file: File) => {
     uploadMutation.mutate(file);
@@ -66,6 +75,11 @@ export default function Home() {
   const handleAnalyzeAnother = () => {
     setAnalysisId(null);
     queryClient.clear();
+  };
+
+  // Debug function to manually load the completed analysis
+  const loadCompletedAnalysis = () => {
+    setAnalysisId(1); // Load the analysis we know exists
   };
 
   const currentStep = analysisId 
@@ -128,6 +142,16 @@ export default function Home() {
             onFileUpload={handleFileUpload}
             isUploading={uploadMutation.isPending}
           />
+          
+          {/* Debug Button - Load Completed Analysis */}
+          {!analysisId && (
+            <Button 
+              onClick={loadCompletedAnalysis}
+              className="grok-gradient text-white mt-4"
+            >
+              🔗 Load Backend Results
+            </Button>
+          )}
 
           {/* Avatar Section */}
           <AvatarSection 
