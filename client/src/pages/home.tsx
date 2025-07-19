@@ -96,24 +96,24 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background font-sans">
       {/* Header */}
-      <header className="glass-panel border-b border-border/20">
+      <header className="glass-header">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 hyperdash-gradient rounded-xl flex items-center justify-center shadow-lg hyperdash-glow">
-                <User className="text-black w-5 h-5" />
+              <div className="icon-container w-10 h-10">
+                <User className="text-primary w-5 h-5" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-foreground hyperdash-gradient-text text-glow">CV Analyzer Pro</h1>
-                <p className="text-sm text-muted-foreground">Professional AI Career Coach</p>
+                <h1 className="text-xl font-semibold text-foreground gradient-text">CV Analyzer</h1>
+                <p className="text-sm text-muted-foreground">AI Career Coach</p>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hyperdash-hover">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                 <HelpCircle className="w-4 h-4 mr-1" />
                 Help
               </Button>
-              <Button size="sm" className="hyperdash-button text-white">
+              <Button size="sm" className="accent-button">
                 <User className="w-4 h-4 mr-1" />
                 Account
               </Button>
@@ -125,11 +125,11 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-6xl font-bold hyperdash-gradient-text mb-6 text-glow">
-            Career Intelligence
+          <h2 className="text-4xl md:text-5xl font-bold gradient-text mb-6">
+            Smart Career Analysis
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Advanced AI-powered career analysis with real-time insights and personalized voice feedback
+            Get personalized feedback on your CV through AI-powered analysis and natural voice insights
           </p>
         </div>
 
@@ -147,9 +147,9 @@ export default function Home() {
           {!analysisId && (
             <Button 
               onClick={loadCompletedAnalysis}
-              className="hyperdash-button hyperdash-glow mt-4"
+              className="accent-button mt-4"
             >
-              🔗 Connect to Backend
+              🔗 Load Previous Analysis
             </Button>
           )}
 

@@ -42,17 +42,14 @@ export default function ProcessSteps({ currentStep }: ProcessStepsProps) {
           return (
             <div key={step.id} className="flex items-center">
               <div className="flex flex-col items-center">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 relative ${
+                <div className={`step-indicator mb-2 relative ${
                   isCompleted 
-                    ? 'hyperdash-gradient text-black status-long'
+                    ? 'completed'
                     : step.active 
-                      ? 'step-indicator active hyperdash-gradient text-black' 
-                      : 'bg-muted text-muted-foreground metallic-accent'
+                      ? 'active' 
+                      : ''
                 }`}>
                   {isCompleted ? <CheckCircle className="w-6 h-6" /> : <Icon className="w-6 h-6" />}
-                  {step.active && (
-                    <div className="absolute -inset-1 hyperdash-gradient rounded-full pulse-ring opacity-40"></div>
-                  )}
                 </div>
                 <span className={`text-sm font-medium ${
                   step.active || isCompleted ? 'text-foreground' : 'text-muted-foreground'
