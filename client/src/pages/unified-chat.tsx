@@ -705,10 +705,12 @@ ${analysis.feedback}`;
           <div className="flex items-center justify-center space-x-4">
             <Button
               onClick={() => setInteractionMode('text')}
-              variant={interactionMode === 'text' ? 'default' : 'ghost'}
+              variant="ghost"
               size="sm"
-              className={`titillium-web-semibold rounded-full border border-gray-600/30 transition-all duration-300 ${
-                interactionMode === 'text' ? 'bg-blue-500/10 border-blue-400/40 shadow-lg' : 'hover:bg-gray-700/20'
+              className={`titillium-web-semibold rounded-full px-6 py-2 ${
+                interactionMode === 'text' 
+                  ? 'sleek-button-selected' 
+                  : 'sleek-button'
               }`}
             >
               <MessageSquare className="w-4 h-4 mr-2" />
@@ -716,10 +718,12 @@ ${analysis.feedback}`;
             </Button>
             <Button
               onClick={() => setInteractionMode('click-to-talk')}
-              variant={interactionMode === 'click-to-talk' ? 'default' : 'ghost'}
+              variant="ghost"
               size="sm"
-              className={`titillium-web-semibold rounded-full border border-gray-600/30 transition-all duration-300 ${
-                interactionMode === 'click-to-talk' ? 'bg-blue-500/10 border-blue-400/40 shadow-lg' : 'hover:bg-gray-700/20'
+              className={`titillium-web-semibold rounded-full px-6 py-2 ${
+                interactionMode === 'click-to-talk' 
+                  ? 'sleek-button-selected' 
+                  : 'sleek-button'
               }`}
             >
               <Mic className="w-4 h-4 mr-2" />
@@ -727,10 +731,12 @@ ${analysis.feedback}`;
             </Button>
             <Button
               onClick={() => setInteractionMode('continuous')}
-              variant={interactionMode === 'continuous' ? 'default' : 'ghost'}
+              variant="ghost"
               size="sm"
-              className={`titillium-web-semibold rounded-full border border-gray-600/30 transition-all duration-300 ${
-                interactionMode === 'continuous' ? 'bg-blue-500/10 border-blue-400/40 shadow-lg' : 'hover:bg-gray-700/20'
+              className={`titillium-web-semibold rounded-full px-6 py-2 ${
+                interactionMode === 'continuous' 
+                  ? 'sleek-button-selected' 
+                  : 'sleek-button'
               }`}
             >
               <Radio className="w-4 h-4 mr-2" />
@@ -799,7 +805,7 @@ ${analysis.feedback}`;
                                 onClick={() => playAudio(message.audioUrl!)}
                                 variant="ghost"
                                 size="sm"
-                                className="titillium-web-semibold bg-blue-500/20 hover:bg-blue-400/30 text-blue-300 border border-blue-400/30 h-7 px-3 rounded-lg transition-all duration-200 hover:scale-105 text-xs"
+                                className="titillium-web-semibold sleek-button h-7 px-3 rounded-lg text-xs"
                               >
                                 <Volume2 className="w-3 h-3 mr-1" />
                                 PLAY AUDIO
@@ -845,10 +851,10 @@ ${analysis.feedback}`;
                 disabled={isProcessing || !isConnected}
                 className={`titillium-web-bold w-16 h-16 rounded-full border-4 transition-all duration-200 ${
                   isContinuousMode
-                    ? 'bg-blue-500 border-blue-300 scale-110 shadow-blue-500/30 shadow-2xl animate-pulse'
+                    ? 'bg-emerald-500 border-emerald-300 scale-110 shadow-emerald-500/30 shadow-2xl animate-pulse'
                     : isRecording 
                     ? 'bg-red-500 border-red-300 scale-110 shadow-red-500/30 shadow-2xl' 
-                    : 'bg-gray-800/50 border-gray-600/50 hover:scale-105 shadow-blue-500/20 shadow-xl hover:border-blue-400/50'
+                    : 'sleek-button border-4 hover:scale-105 shadow-xl hover:sleek-button-selected'
                 }`}
               >
                 {isProcessing ? (
@@ -858,7 +864,7 @@ ${analysis.feedback}`;
                 ) : isRecording ? (
                   <MicOff className="w-6 h-6 text-white" />
                 ) : (
-                  <Mic className="w-6 h-6 text-blue-300" />
+                  <Mic className="w-6 h-6 text-gray-300" />
                 )}
               </Button>
             </div>
@@ -878,7 +884,8 @@ ${analysis.feedback}`;
               <Button
                 onClick={sendTextMessage}
                 disabled={!inputText.trim() || isProcessing}
-                className="titillium-web-semibold bg-blue-500/10 border border-blue-400/30 hover:bg-blue-500/20 transition-all duration-300 text-blue-300"
+                variant="ghost"
+                className="titillium-web-semibold sleek-button px-4"
               >
                 {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               </Button>
@@ -889,8 +896,8 @@ ${analysis.feedback}`;
           <div className="flex justify-center">
             <Button
               onClick={() => fileInputRef.current?.click()}
-              variant="outline"
-              className="titillium-web-bold bg-blue-500/10 border border-blue-400/30 hover:bg-blue-500/20 transition-all duration-300 text-blue-300"
+              variant="ghost"
+              className="titillium-web-bold sleek-button px-6 py-3"
               disabled={isProcessing}
             >
               <Upload className="w-4 h-4 mr-2" />
