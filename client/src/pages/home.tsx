@@ -96,24 +96,24 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background font-sans">
       {/* Header */}
-      <header className="bg-card/50 backdrop-blur-lg border-b border-border/50">
+      <header className="glass-panel border-b border-border/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 grok-gradient rounded-xl flex items-center justify-center shadow-lg">
-                <User className="text-white w-5 h-5" />
+              <div className="w-10 h-10 hyperdash-gradient rounded-xl flex items-center justify-center shadow-lg hyperdash-glow">
+                <User className="text-black w-5 h-5" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-foreground grok-gradient-text">AI Avatar CV Analyzer</h1>
-                <p className="text-sm text-muted-foreground">Professional Career Feedback</p>
+                <h1 className="text-xl font-semibold text-foreground hyperdash-gradient-text text-glow">CV Analyzer Pro</h1>
+                <p className="text-sm text-muted-foreground">Professional AI Career Coach</p>
               </div>
             </div>
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground grok-hover">
+              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hyperdash-hover">
                 <HelpCircle className="w-4 h-4 mr-1" />
                 Help
               </Button>
-              <Button size="sm" className="grok-gradient text-white hover:opacity-90">
+              <Button size="sm" className="hyperdash-button text-white">
                 <User className="w-4 h-4 mr-1" />
                 Account
               </Button>
@@ -125,11 +125,11 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold grok-gradient-text mb-4">
-            CV Analysis Redefined
+          <h2 className="text-4xl md:text-6xl font-bold hyperdash-gradient-text mb-6 text-glow">
+            Career Intelligence
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Experience the future of career coaching with AI-powered insights and natural voice feedback
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            Advanced AI-powered career analysis with real-time insights and personalized voice feedback
           </p>
         </div>
 
@@ -147,9 +147,9 @@ export default function Home() {
           {!analysisId && (
             <Button 
               onClick={loadCompletedAnalysis}
-              className="grok-gradient text-white mt-4"
+              className="hyperdash-button hyperdash-glow mt-4"
             >
-              🔗 Load Backend Results
+              🔗 Connect to Backend
             </Button>
           )}
 
