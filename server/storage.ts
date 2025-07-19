@@ -1,4 +1,6 @@
 import { users, cvAnalyses, type User, type InsertUser, type CvAnalysis, type InsertCvAnalysis } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -9,62 +11,49 @@ export interface IStorage {
   updateCvAnalysis(id: number, updates: Partial<CvAnalysis>): Promise<CvAnalysis | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private cvAnalyses: Map<number, CvAnalysis>;
-  private currentUserId: number;
-  private currentAnalysisId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.cvAnalyses = new Map();
-    this.currentUserId = 1;
-    this.currentAnalysisId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async createCvAnalysis(analysis: InsertCvAnalysis): Promise<CvAnalysis> {
-    const id = this.currentAnalysisId++;
-    const cvAnalysis: CvAnalysis = { 
-      ...analysis, 
-      id,
-      analysis: null,
-      audioUrl: null,
-      status: "processing",
-      createdAt: new Date()
-    };
-    this.cvAnalyses.set(id, cvAnalysis);
+    const [cvAnalysis] = await db
+      .insert(cvAnalyses)
+      .values({
+        ...analysis,
+        status: "processing"
+      })
+      .returning();
     return cvAnalysis;
   }
 
   async getCvAnalysis(id: number): Promise<CvAnalysis | undefined> {
-    return this.cvAnalyses.get(id);
+    const [analysis] = await db.select().from(cvAnalyses).where(eq(cvAnalyses.id, id));
+    return analysis || undefined;
   }
 
   async updateCvAnalysis(id: number, updates: Partial<CvAnalysis>): Promise<CvAnalysis | undefined> {
-    const existing = this.cvAnalyses.get(id);
-    if (!existing) return undefined;
-    
-    const updated = { ...existing, ...updates };
-    this.cvAnalyses.set(id, updated);
-    return updated;
+    const [updated] = await db
+      .update(cvAnalyses)
+      .set(updates)
+      .where(eq(cvAnalyses.id, id))
+      .returning();
+    return updated || undefined;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
