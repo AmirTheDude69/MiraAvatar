@@ -266,10 +266,6 @@ export default function UnifiedChat() {
           }
         }
 
-        toast({
-          title: "Voice Response Ready",
-          description: "AI has responded to your message",
-        });
         break;
 
       case 'processing_step':
@@ -330,24 +326,24 @@ ${analysis.feedback}`;
 
     const audio = new Audio(audioUrl);
     currentAudioRef.current = audio;
-    
+
     // Activate Mira when audio starts playing
     audio.addEventListener('play', () => {
       setIsMiraActive(true);
     });
-    
+
     // Deactivate Mira when audio ends
     audio.addEventListener('ended', () => {
       setIsMiraActive(false);
       currentAudioRef.current = null;
     });
-    
+
     // Handle audio errors
     audio.addEventListener('error', () => {
       setIsMiraActive(false);
       currentAudioRef.current = null;
     });
-    
+
     audio.play().catch(console.error);
   };
 
