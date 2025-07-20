@@ -14,52 +14,82 @@ interface MiraPhoneModeProps {
 // Use copied video file with clean name
 const miraVideo = '/mira-avatar.mp4';
 
-// Advanced data visualization for waiting state
+// Mesmerizing data visualization with thin lines
 const DataCluster = () => {
   return (
     <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-      <div className="relative w-full h-full max-w-md">
-        {/* Central matrix core */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-gradient-to-br from-emerald-400 to-cyan-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/50"></div>
+      <div className="relative w-full h-full">
+        {/* Central nexus */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-400/80"></div>
         
-        {/* Multiple orbiting layers */}
-        {Array.from({ length: 4 }).map((_, layer) => {
-          const nodeCount = 8 + layer * 4;
-          const radius = 80 + layer * 40;
-          
-          return Array.from({ length: nodeCount }).map((_, i) => {
-            const angle = (i * (360 / nodeCount)) * Math.PI / 180;
-            const x = Math.cos(angle) * radius;
-            const y = Math.sin(angle) * radius;
-            const size = 4 - layer * 0.5;
-            const opacity = 1 - layer * 0.2;
+        {/* Complex web network with thin lines */}
+        <svg className="absolute inset-0 w-full h-full" style={{ filter: 'drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))' }}>
+          {/* Radial spokes */}
+          {Array.from({ length: 16 }).map((_, i) => {
+            const angle = (i * 22.5) * Math.PI / 180;
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const endX = centerX + Math.cos(angle) * 200;
+            const endY = centerY + Math.sin(angle) * 200;
             
             return (
-              <div
-                key={`${layer}-${i}`}
-                className="absolute rounded-full bg-gradient-to-br from-emerald-300 to-teal-300"
-                style={{
-                  left: `calc(50% + ${x}px)`,
-                  top: `calc(50% + ${y}px)`,
-                  width: `${size}px`,
-                  height: `${size}px`,
-                  opacity: opacity * 0.8,
-                  animation: `float ${3 + layer * 0.5}s infinite ease-in-out, spin ${10 + layer * 5}s infinite linear`,
-                  animationDelay: `${i * 0.1 + layer * 0.3}s`,
-                  filter: 'drop-shadow(0 0 4px rgba(16, 185, 129, 0.5))'
+              <line
+                key={`spoke-${i}`}
+                x1={centerX}
+                y1={centerY}
+                x2={endX}
+                y2={endY}
+                stroke="rgba(16, 185, 129, 0.3)"
+                strokeWidth="0.5"
+                className="animate-pulse"
+                style={{ 
+                  animationDelay: `${i * 0.1}s`,
+                  animationDuration: `${2 + (i % 4)}s`
                 }}
               />
             );
-          });
-        })}
-        
-        {/* Dynamic connecting web */}
-        <svg className="absolute inset-0 w-full h-full" style={{ filter: 'drop-shadow(0 0 6px rgba(16, 185, 129, 0.4))' }}>
-          {Array.from({ length: 24 }).map((_, i) => {
-            const angle1 = (i * 15) * Math.PI / 180;
-            const angle2 = ((i + 3) * 15) * Math.PI / 180;
-            const radius1 = 80 + (i % 3) * 40;
-            const radius2 = 120 + (i % 2) * 40;
+          })}
+          
+          {/* Concentric geometric patterns */}
+          {Array.from({ length: 8 }).map((_, ring) => {
+            const radius = 40 + ring * 25;
+            const points = 6 + ring * 2;
+            
+            return Array.from({ length: points }).map((_, point) => {
+              const angle1 = (point * (360 / points)) * Math.PI / 180;
+              const angle2 = ((point + 1) * (360 / points)) * Math.PI / 180;
+              const centerX = window.innerWidth / 2;
+              const centerY = window.innerHeight / 2;
+              const x1 = centerX + Math.cos(angle1) * radius;
+              const y1 = centerY + Math.sin(angle1) * radius;
+              const x2 = centerX + Math.cos(angle2) * radius;
+              const y2 = centerY + Math.sin(angle2) * radius;
+              
+              return (
+                <line
+                  key={`ring-${ring}-${point}`}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="rgba(16, 185, 129, 0.25)"
+                  strokeWidth="0.5"
+                  className="animate-pulse"
+                  style={{ 
+                    animationDelay: `${ring * 0.2 + point * 0.05}s`,
+                    animationDuration: `${3 + ring * 0.3}s`
+                  }}
+                />
+              );
+            });
+          })}
+          
+          {/* Cross-connecting web */}
+          {Array.from({ length: 40 }).map((_, i) => {
+            const angle1 = (i * 9) * Math.PI / 180;
+            const angle2 = ((i + 5) * 9) * Math.PI / 180;
+            const radius1 = 60 + (i % 4) * 30;
+            const radius2 = 80 + (i % 3) * 40;
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
             const x1 = centerX + Math.cos(angle1) * radius1;
@@ -69,56 +99,95 @@ const DataCluster = () => {
             
             return (
               <line
-                key={i}
+                key={`web-${i}`}
                 x1={x1}
                 y1={y1}
                 x2={x2}
                 y2={y2}
-                stroke="rgba(16, 185, 129, 0.2)"
-                strokeWidth="1"
+                stroke="rgba(16, 185, 129, 0.15)"
+                strokeWidth="0.5"
                 className="animate-pulse"
                 style={{ 
-                  animationDelay: `${i * 0.1}s`,
-                  animationDuration: `${2 + (i % 3)}s`
+                  animationDelay: `${i * 0.05}s`,
+                  animationDuration: `${2 + (i % 5)}s`
                 }}
               />
             );
           })}
+          
+          {/* Spiral patterns */}
+          {Array.from({ length: 3 }).map((_, spiral) => {
+            const points = 60;
+            return Array.from({ length: points - 1 }).map((_, i) => {
+              const t1 = (i / points) * 4 * Math.PI;
+              const t2 = ((i + 1) / points) * 4 * Math.PI;
+              const radius1 = 20 + t1 * 8 + spiral * 15;
+              const radius2 = 20 + t2 * 8 + spiral * 15;
+              const centerX = window.innerWidth / 2;
+              const centerY = window.innerHeight / 2;
+              const x1 = centerX + Math.cos(t1 + spiral * 2) * radius1;
+              const y1 = centerY + Math.sin(t1 + spiral * 2) * radius1;
+              const x2 = centerX + Math.cos(t2 + spiral * 2) * radius2;
+              const y2 = centerY + Math.sin(t2 + spiral * 2) * radius2;
+              
+              return (
+                <line
+                  key={`spiral-${spiral}-${i}`}
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="rgba(6, 214, 160, 0.2)"
+                  strokeWidth="0.5"
+                  className="animate-pulse"
+                  style={{ 
+                    animationDelay: `${spiral * 0.5 + i * 0.02}s`,
+                    animationDuration: `${4 + spiral}s`
+                  }}
+                />
+              );
+            });
+          })}
         </svg>
         
-        {/* Pulsing energy rings */}
-        {Array.from({ length: 5 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-emerald-400 rounded-full animate-ping"
-            style={{
-              width: `${(i + 1) * 60}px`,
-              height: `${(i + 1) * 60}px`,
-              opacity: 0.1 + (i * 0.05),
-              animationDelay: `${i * 0.2}s`,
-              animationDuration: `${3 + i * 0.5}s`
-            }}
-          />
-        ))}
+        {/* Flowing data streams */}
+        {Array.from({ length: 8 }).map((_, i) => {
+          const angle = (i * 45) * Math.PI / 180;
+          return (
+            <div
+              key={`stream-${i}`}
+              className="absolute w-px h-32 bg-gradient-to-t from-transparent via-emerald-400 to-transparent"
+              style={{
+                left: '50%',
+                top: '50%',
+                transformOrigin: 'bottom center',
+                transform: `rotate(${i * 45}deg) translateY(-100px)`,
+                animation: `stream-flow ${2 + i * 0.3}s infinite ease-in-out`,
+                animationDelay: `${i * 0.2}s`
+              }}
+            />
+          );
+        })}
         
-        {/* Floating data particles */}
-        {Array.from({ length: 20 }).map((_, i) => (
+        {/* Particle field */}
+        {Array.from({ length: 50 }).map((_, i) => (
           <div
             key={`particle-${i}`}
-            className="absolute w-1 h-1 bg-emerald-400 rounded-full"
+            className="absolute w-px h-px bg-emerald-300"
             style={{
-              left: `${20 + Math.random() * 60}%`,
-              top: `${20 + Math.random() * 60}%`,
-              animation: `float ${2 + Math.random() * 3}s infinite ease-in-out`,
-              animationDelay: `${Math.random() * 2}s`,
-              opacity: 0.3 + Math.random() * 0.4
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `particle-drift ${5 + Math.random() * 5}s infinite linear`,
+              animationDelay: `${Math.random() * 3}s`,
+              opacity: 0.2 + Math.random() * 0.6,
+              filter: 'drop-shadow(0 0 2px rgba(16, 185, 129, 0.8))'
             }}
           />
         ))}
         
-        {/* Energy waves */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/5 to-transparent animate-pulse"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-400/5 to-transparent animate-pulse" style={{ animationDelay: '1s' }}></div>
+        {/* Electromagnetic field lines */}
+        <div className="absolute inset-0 bg-gradient-radial from-emerald-400/5 via-transparent to-cyan-400/5 animate-pulse"></div>
+        <div className="absolute inset-0 bg-gradient-conic from-emerald-400/3 via-transparent to-emerald-400/3 animate-spin" style={{ animationDuration: '20s' }}></div>
       </div>
     </div>
   );
@@ -170,36 +239,42 @@ export function MiraPhoneMode({
     <div className="fixed inset-0 bg-black z-50 flex flex-col justify-center items-center">
       {/* Main content area - vertical layout */}
       <div className="relative w-full h-full flex flex-col justify-center items-center overflow-hidden">
-        {isMiraActive ? (
-          // Mira video when talking - centered vertically
-          <div className="relative w-full h-full flex items-center justify-center">
-            <video
-              ref={videoRef}
-              className="max-w-full max-h-full object-contain"
-              style={{ backgroundColor: 'transparent' }}
-              muted
-              playsInline
-              onLoadedData={() => {
-                setIsVideoReady(true);
-                if (videoRef.current) {
-                  videoRef.current.playbackRate = 0.85;
-                }
-              }}
-              onError={(e) => console.error('Mira video error:', e)}
-            >
-              <source src={miraVideo} type="video/mp4" />
-            </video>
-          </div>
-        ) : (
-          // Advanced data cluster when waiting
+        {/* Smooth transition between states */}
+        <div className={`absolute inset-0 transition-opacity duration-1000 ${isMiraActive ? 'opacity-0' : 'opacity-100'}`}>
           <DataCluster />
-        )}
+        </div>
+        
+        {/* Mira video with smooth fade-in */}
+        <div className={`absolute inset-0 transition-opacity duration-1000 ${isMiraActive ? 'opacity-100' : 'opacity-0'} flex items-center justify-center`}>
+          <video
+            ref={videoRef}
+            className="max-w-full max-h-full object-contain"
+            style={{ backgroundColor: 'transparent' }}
+            muted
+            playsInline
+            onLoadedData={() => {
+              setIsVideoReady(true);
+              if (videoRef.current) {
+                videoRef.current.playbackRate = 0.85;
+              }
+            }}
+            onError={(e) => console.error('Mira video error:', e)}
+          >
+            <source src={miraVideo} type="video/mp4" />
+          </video>
+        </div>
 
-        {/* Caption overlay when Mira is talking */}
+        {/* Proportionate caption overlay when Mira is talking */}
         {isMiraActive && currentTranscription && (
           <div className="absolute bottom-24 left-4 right-4 z-10">
-            <div className="bg-black/90 backdrop-blur-md rounded-2xl p-6 border border-emerald-400/40 shadow-lg shadow-emerald-400/20">
-              <p className="text-white text-center titillium-web-regular text-xl leading-relaxed">
+            <div className="bg-black/90 backdrop-blur-md rounded-2xl border border-emerald-400/40 shadow-lg shadow-emerald-400/20" 
+                 style={{ 
+                   padding: `${Math.max(16, Math.min(32, currentTranscription.length / 10))}px ${Math.max(20, Math.min(40, currentTranscription.length / 8))}px`
+                 }}>
+              <p className="text-white text-center titillium-web-regular leading-relaxed"
+                 style={{ 
+                   fontSize: `${Math.max(14, Math.min(24, 20 - currentTranscription.length / 50))}px`
+                 }}>
                 {currentTranscription}
               </p>
             </div>

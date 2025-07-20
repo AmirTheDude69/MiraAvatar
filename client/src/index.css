@@ -598,3 +598,27 @@
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* Stream flow animation */
+@keyframes stream-flow {
+  0%, 100% { opacity: 0; transform: scale(1) translateY(-100px); }
+  50% { opacity: 1; transform: scale(1.2) translateY(-80px); }
+}
+
+/* Particle drift animation */
+@keyframes particle-drift {
+  0% { transform: translateY(0px) translateX(0px); }
+  25% { transform: translateY(-10px) translateX(5px); }
+  50% { transform: translateY(-5px) translateX(-3px); }
+  75% { transform: translateY(-15px) translateX(8px); }
+  100% { transform: translateY(0px) translateX(0px); }
+}
+
+/* Gradient utilities */
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
+.bg-gradient-conic {
+  background: conic-gradient(var(--tw-gradient-stops));
+}
