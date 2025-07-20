@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Loader2 } from 'lucide-react';
+import { Mic, MicOff, Loader2, ArrowLeft } from 'lucide-react';
 
 interface MiraPhoneModeProps {
   isRecording: boolean;
@@ -9,6 +9,7 @@ interface MiraPhoneModeProps {
   isMiraActive: boolean;
   currentTranscription: string;
   onToggleRecording: () => void;
+  onBack: () => void;
 }
 
 // Use copied video file with clean name
@@ -199,7 +200,8 @@ export function MiraPhoneMode({
   isConnected, 
   isMiraActive, 
   currentTranscription,
-  onToggleRecording 
+  onToggleRecording,
+  onBack 
 }: MiraPhoneModeProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
@@ -237,6 +239,16 @@ export function MiraPhoneMode({
 
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col justify-center items-center">
+      {/* Subtle back button */}
+      <Button
+        onClick={onBack}
+        variant="ghost"
+        size="sm"
+        className="absolute top-4 left-4 z-30 opacity-30 hover:opacity-70 transition-opacity duration-200 text-emerald-300 hover:text-emerald-200"
+      >
+        <ArrowLeft className="w-5 h-5" />
+      </Button>
+
       {/* Main content area - vertical layout */}
       <div className="relative w-full h-full flex flex-col justify-center items-center overflow-hidden">
         {/* Smooth transition between states */}

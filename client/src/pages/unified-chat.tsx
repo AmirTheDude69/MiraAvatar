@@ -740,6 +740,7 @@ ${analysis.feedback}`;
         isMiraActive={isMiraActive}
         currentTranscription={currentTranscription}
         onToggleRecording={toggleRecording}
+        onBack={() => setInteractionMode('text')}
       />
     );
   }
