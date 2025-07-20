@@ -974,10 +974,10 @@ ${analysis.feedback}`;
             <Button
               onClick={() => fileInputRef.current?.click()}
               variant="ghost"
-              className="titillium-web-bold p-3 hover:bg-transparent"
+              className="titillium-web-bold sleek-button p-3"
               disabled={isProcessing}
             >
-              <span className="text-blue-400 text-xs font-bold">CV</span>
+              <span className="w-6 h-6 bg-gradient-to-br from-blue-400 to-purple-500 text-white text-xs font-bold rounded flex items-center justify-center">CV</span>
             </Button>
             <input
               ref={fileInputRef}
