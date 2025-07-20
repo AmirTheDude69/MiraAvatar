@@ -9,7 +9,7 @@ export class ElevenLabsService {
     this.apiKey = process.env.ELEVENLABS_API_KEY || process.env.ELEVENLABS_KEY || "";
   }
 
-  async generateSpeech(text: string, voiceId: string = "21m00Tcm4TlvDq8ikWAM"): Promise<string> {
+  async generateSpeech(text: string, voiceId: string = "aEO01A4wXwd1O8GPgGlF"): Promise<string> {
     try {
       if (!this.apiKey) {
         console.log("No ElevenLabs API key provided, using mock audio");

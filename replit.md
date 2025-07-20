@@ -7,6 +7,7 @@ This is a full-stack web application that creates an AI-powered avatar chatbot f
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+ElevenLabs Voice ID: aEO01A4wXwd1O8GPgGlF (Custom voice preference for all TTS generation)
 
 ## System Architecture
 
