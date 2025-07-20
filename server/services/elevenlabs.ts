@@ -16,7 +16,7 @@ export class ElevenLabsService {
         return "https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav";
       }
 
-      console.log("Generating speech with ElevenLabs...");
+      console.log(`Generating speech with ElevenLabs using voice ID: ${voiceId}...`);
       
       const response = await fetch(`${this.baseUrl}/text-to-speech/${voiceId}`, {
         method: "POST",
