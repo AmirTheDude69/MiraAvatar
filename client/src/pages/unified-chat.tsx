@@ -937,11 +937,10 @@ ${analysis.feedback}`;
             <Button
               onClick={() => fileInputRef.current?.click()}
               variant="ghost"
-              className="titillium-web-bold sleek-button px-6 py-3"
+              className="titillium-web-bold sleek-button p-3"
               disabled={isProcessing}
             >
-              <Upload className="w-4 h-4 mr-2" />
-              UPLOAD DATA PACKAGE
+              <img src="/upload-icon.png" alt="Upload" className="w-6 h-6" />
             </Button>
             <input
               ref={fileInputRef}
