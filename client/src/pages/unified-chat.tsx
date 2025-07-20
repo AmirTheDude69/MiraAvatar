@@ -727,7 +727,7 @@ ${analysis.feedback}`;
         {/* Header with interaction modes */}
         <div className="mb-6">
           <h1 className="text-4xl titillium-web-bold text-center mb-6 neon-text">
-            AI CAREER NEXUS
+            AskMira
           </h1>
           <div className="flex items-center justify-center space-x-4">
             <Button
