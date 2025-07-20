@@ -818,18 +818,18 @@ ${analysis.feedback}`;
                               : 'bg-gradient-to-br from-gray-800/95 to-gray-900/95 border-gray-600/20 text-white rounded-bl-md'
                           }`}
                         >
-                          <div className="prose prose-sm prose-invert max-w-none break-words overflow-hidden">
+                          <div className="prose prose-sm prose-invert max-w-none break-words overflow-hidden text-left">
                             {message.content.includes('#') ? (
                               <div dangerouslySetInnerHTML={{ 
                                 __html: message.content
-                                  .replace(/^# (.+)$/gm, '<h1 class="text-lg font-bold mb-3 text-white">$1</h1>')
-                                  .replace(/^## (.+)$/gm, '<h2 class="text-base font-semibold mb-2 text-blue-300">$1</h2>')
+                                  .replace(/^# (.+)$/gm, '<h1 class="text-lg font-bold mb-3 text-white text-left">$1</h1>')
+                                  .replace(/^## (.+)$/gm, '<h2 class="text-base font-semibold mb-2 text-blue-300 text-left">$1</h2>')
                                   .replace(/^\*\*(.+?)\*\*/gm, '<strong class="text-blue-300">$1</strong>')
-                                  .replace(/^• (.+)$/gm, '<div class="ml-2 mb-1 text-sm">• $1</div>')
-                                  .replace(/^(\d+)\. (.+)$/gm, '<div class="mb-1 text-sm"><span class="text-blue-300 font-semibold">$1.</span> $2</div>')
+                                  .replace(/^• (.+)$/gm, '<div class="ml-2 mb-1 text-sm text-left">• $1</div>')
+                                  .replace(/^(\d+)\. (.+)$/gm, '<div class="mb-1 text-sm text-left"><span class="text-blue-300 font-semibold">$1.</span> $2</div>')
                               }} />
                             ) : (
-                              <p className="m-0 text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                              <p className="m-0 text-sm leading-relaxed whitespace-pre-wrap text-left">{message.content}</p>
                             )}
                           </div>
 
