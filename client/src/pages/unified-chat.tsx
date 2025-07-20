@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { MiraAvatar } from '@/components/MiraAvatar';
+import { MiraPhoneMode } from '@/components/MiraPhoneMode';
 import { Mic, MicOff, Send, Upload, Bot, User, Loader2, Radio, FileText, MessageSquare, Volume2 } from 'lucide-react';
 
 interface Message {
@@ -16,7 +17,7 @@ interface Message {
   isProcessing?: boolean;
 }
 
-type InteractionMode = 'text' | 'click-to-talk' | 'continuous';
+type InteractionMode = 'text' | 'click-to-talk' | 'mira' | 'continuous';
 
 export default function UnifiedChat() {
   // Chat state
@@ -44,6 +45,7 @@ export default function UnifiedChat() {
 
   // Mira Avatar state
   const [isMiraActive, setIsMiraActive] = useState(false);
+  const [currentTranscription, setCurrentTranscription] = useState('');
 
   const { toast } = useToast();
 
@@ -233,6 +235,8 @@ export default function UnifiedChat() {
 
       case 'transcription_complete':
         console.log('Transcription received:', data.transcription);
+        // Store transcription for MIRA mode
+        setCurrentTranscription(data.transcription);
         // Add user message with transcription
         const userMsg: Message = {
           id: Date.now().toString(),
@@ -246,6 +250,10 @@ export default function UnifiedChat() {
       case 'voice_response':
         console.log('Voice response received');
         setIsProcessing(false);
+        
+        // Store response text for MIRA mode captions
+        setCurrentTranscription(data.response || data.text || 'Voice response received');
+        
         const newMessage: Message = {
           id: Date.now().toString(),
           type: 'assistant',
@@ -715,6 +723,27 @@ ${analysis.feedback}`;
     poll();
   };
 
+  // Handle MIRA mode transcription clearing
+  useEffect(() => {
+    if (!isMiraActive && interactionMode !== 'mira') {
+      setCurrentTranscription('');
+    }
+  }, [isMiraActive, interactionMode]);
+
+  // MIRA mode - full screen phone interface
+  if (interactionMode === 'mira') {
+    return (
+      <MiraPhoneMode
+        isRecording={isRecording}
+        isProcessing={isProcessing}
+        isConnected={isConnected}
+        isMiraActive={isMiraActive}
+        currentTranscription={currentTranscription}
+        onToggleRecording={toggleRecording}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Subtle background effects */}
@@ -755,6 +784,19 @@ ${analysis.feedback}`;
             >
               <Mic className="w-4 h-4 mr-2" />
               VOICE
+            </Button>
+            <Button
+              onClick={() => setInteractionMode('mira')}
+              variant="ghost"
+              size="sm"
+              className={`titillium-web-semibold rounded-full px-6 py-2 ${
+                interactionMode === 'mira' 
+                  ? 'sleek-button-selected' 
+                  : 'sleek-button'
+              }`}
+            >
+              <Bot className="w-4 h-4 mr-2" />
+              MIRA
             </Button>
             <Button
               onClick={() => setInteractionMode('continuous')}
@@ -870,8 +912,8 @@ ${analysis.feedback}`;
 
         {/* Input Area */}
         <div className="space-y-4">
-          {/* Voice Controls (for voice modes) */}
-          {interactionMode !== 'text' && (
+          {/* Voice Controls (for voice modes but not MIRA) */}
+          {interactionMode !== 'text' && interactionMode !== 'mira' && (
             <div className="flex justify-center">
               <Button
                 {...(interactionMode === 'click-to-talk'
