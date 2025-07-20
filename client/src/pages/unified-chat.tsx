@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { MiraAvatar } from '@/components/MiraAvatar';
 import { Mic, MicOff, Send, Upload, Bot, User, Loader2, Radio, FileText, MessageSquare, Volume2 } from 'lucide-react';
 
 interface Message {
@@ -39,6 +40,10 @@ export default function UnifiedChat() {
   const streamRef = useRef<MediaStream | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Mira Avatar state
+  const [isMiraActive, setIsMiraActive] = useState(false);
 
   const { toast } = useToast();
 
@@ -316,7 +321,33 @@ ${analysis.feedback}`;
 
   // Play audio response
   const playAudio = (audioUrl: string) => {
+    // Stop any currently playing audio
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+      setIsMiraActive(false);
+    }
+
     const audio = new Audio(audioUrl);
+    currentAudioRef.current = audio;
+    
+    // Activate Mira when audio starts playing
+    audio.addEventListener('play', () => {
+      setIsMiraActive(true);
+    });
+    
+    // Deactivate Mira when audio ends
+    audio.addEventListener('ended', () => {
+      setIsMiraActive(false);
+      currentAudioRef.current = null;
+    });
+    
+    // Handle audio errors
+    audio.addEventListener('error', () => {
+      setIsMiraActive(false);
+      currentAudioRef.current = null;
+    });
+    
     audio.play().catch(console.error);
   };
 
@@ -917,6 +948,12 @@ ${analysis.feedback}`;
           </div>
         </div>
       </div>
+
+      {/* Mira Avatar - appears only during voice interactions */}
+      <MiraAvatar 
+        isPlaying={isMiraActive} 
+        audioElement={currentAudioRef.current}
+      />
     </div>
   );
 }
