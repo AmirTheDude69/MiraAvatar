@@ -779,7 +779,9 @@ ${analysis.feedback}`;
               {messages.length === 0 ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
-                    <Bot className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500/20 to-blue-500/20 border border-emerald-400/30 opacity-75">
+                      <img src="/mira-pfp.png" alt="Mira" className="w-full h-full object-cover" />
+                    </div>
                     <p className="titillium-web-light">Initialize Neural Connection or Upload Data Package</p>
                   </div>
                 </div>
@@ -791,17 +793,17 @@ ${analysis.feedback}`;
                       className={`flex items-start gap-3 ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
                     >
                       {/* Avatar */}
-                      <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
+                      <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center overflow-hidden ${
                         message.type === 'user' 
                           ? 'shadow-lg' 
-                          : 'bg-gradient-to-br from-gray-700 to-gray-800 border border-primary/30 shadow-lg'
+                          : 'bg-gradient-to-br from-emerald-500/20 to-blue-500/20 border border-emerald-400/30 shadow-lg'
                       }`}
                       style={message.type === 'user' ? {
                         background: 'linear-gradient(135deg, #2e8b57 0%, #40e0d0 100%)'
                       } : undefined}>
                         {message.type === 'user' ? 
                           <User className="w-6 h-6 text-white" /> : 
-                          <Bot className="w-6 h-6 text-primary" />
+                          <img src="/mira-pfp.png" alt="Mira" className="w-full h-full object-cover rounded-full" />
                         }
                       </div>
 
