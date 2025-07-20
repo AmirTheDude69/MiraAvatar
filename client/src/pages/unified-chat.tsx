@@ -780,7 +780,7 @@ ${analysis.feedback}`;
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   <div className="text-center">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500/20 to-blue-500/20 border border-emerald-400/30 opacity-75">
-                      <img src="/mira-pfp.png" alt="Mira" className="w-full h-full object-cover" />
+                      <img src="mira-pfp.png" alt="Mira" className="w-full h-full object-cover" />
                     </div>
                     <p className="titillium-web-light">Initialize Neural Connection or Upload Data Package</p>
                   </div>
@@ -803,7 +803,7 @@ ${analysis.feedback}`;
                       } : undefined}>
                         {message.type === 'user' ? 
                           <User className="w-6 h-6 text-white" /> : 
-                          <img src="/mira-pfp.png" alt="Mira" className="w-full h-full object-cover rounded-full" />
+                          <img src="mira-pfp.png" alt="Mira" className="w-full h-full object-cover rounded-full" />
                         }
                       </div>
 
