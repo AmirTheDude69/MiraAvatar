@@ -940,7 +940,7 @@ ${analysis.feedback}`;
               className="titillium-web-bold sleek-button p-3"
               disabled={isProcessing}
             >
-              <img src="/upload-icon.png" alt="Upload" className="w-6 h-6" />
+              <img src="/icons/CV.svg" alt="Upload CV" className="w-6 h-6" />
             </Button>
             <input
               ref={fileInputRef}
