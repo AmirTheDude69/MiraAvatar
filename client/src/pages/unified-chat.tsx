@@ -835,10 +835,9 @@ ${analysis.feedback}`;
                                 onClick={() => playAudio(message.audioUrl!)}
                                 variant="ghost"
                                 size="sm"
-                                className="titillium-web-semibold sleek-button h-7 px-3 rounded-lg text-xs"
+                                className="titillium-web-semibold sleek-button h-7 w-7 rounded-lg p-1"
                               >
-                                <Volume2 className="w-3 h-3 mr-1" />
-                                PLAY AUDIO
+                                <Volume2 className="w-3 h-3" />
                               </Button>
                             </div>
                           )}
