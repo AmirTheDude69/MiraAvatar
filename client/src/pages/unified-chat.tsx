@@ -911,7 +911,12 @@ ${analysis.feedback}`;
               <Input
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendTextMessage()}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendTextMessage();
+                  }
+                }}
                 placeholder="Enter neural data transmission..."
                 className="titillium-web-regular flex-1 glass-enhanced border-gray-600/30 text-gray-100 placeholder:text-gray-400/70"
                 disabled={isProcessing}
