@@ -9,8 +9,10 @@ export class ElevenLabsService {
   }
 
   private getApiKey(): string {
-    // Dynamically get the API key each time to ensure it's current
-    const key = process.env.ELEVENLABS_API_KEY || process.env.ELEVENLABS_KEY || "";
+    // Use provided API key as fallback if environment variable not available
+    const envKey = process.env.ELEVENLABS_API_KEY || process.env.ELEVENLABS_KEY || "";
+    const providedKey = "sk_5e4c5954e61e27e26161629e7779baefe0a053093b472cfa";
+    const key = envKey || providedKey;
     console.log(`ElevenLabs API key check: ${key ? `Found key starting with ${key.substring(0, 8)}` : 'No key found'}`);
     return key;
   }
